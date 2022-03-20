@@ -67,17 +67,17 @@ public class StartupRunner implements CommandLineRunner {
     @Value("${MYSQL_DATABASE_NAME:hoj}")
     private String mysqlDBName;
 
-    @Value("${MYSQL_HOST:172.20.0.3}")
+    @Value("${MYSQL_HOST:192.168.1.146}")
     private String mysqlHost;
 
-    @Value("${MYSQL_PUBLIC_HOST:172.20.0.3}")
+    @Value("${MYSQL_PUBLIC_HOST:192.168.1.146}")
     private String mysqlPublicHost;
 
     @Value("${MYSQL_PORT:3306}")
     private Integer mysqlPort;
 
     // 缓存配置
-    @Value("${REDIS_HOST:172.20.0.2}")
+    @Value("${REDIS_HOST:192.168.1.146}")
     private String redisHost;
 
     @Value("${REDIS_PORT:6379}")
@@ -88,6 +88,7 @@ public class StartupRunner implements CommandLineRunner {
     // 判题服务token
     @Value("${JUDGE_TOKEN:default}")
     private String judgeToken;
+
 
     // 邮箱配置
     @Value("${EMAIL_USERNAME:your_email_username}")
@@ -108,16 +109,16 @@ public class StartupRunner implements CommandLineRunner {
     @Value("${HDU_ACCOUNT_PASSWORD_LIST:}")
     private List<String> hduPasswordList;
 
-    @Value("${CF_ACCOUNT_USERNAME_LIST:}")
+    @Value("${CF_ACCOUNT_USERNAME_LIST:popcorn666}")
     private List<String> cfUsernameList;
 
-    @Value("${CF_ACCOUNT_PASSWORD_LIST:}")
+    @Value("${CF_ACCOUNT_PASSWORD_LIST:popcorn@666}")
     private List<String> cfPasswordList;
 
-    @Value("${POJ_ACCOUNT_USERNAME_LIST:}")
+    @Value("${POJ_ACCOUNT_USERNAME_LIST:IC-vj1}")
     private List<String> pojUsernameList;
 
-    @Value("${POJ_ACCOUNT_PASSWORD_LIST:}")
+    @Value("${POJ_ACCOUNT_PASSWORD_LIST:IC-vj1}")
     private List<String> pojPasswordList;
 
     @Value("${ATCODER_ACCOUNT_USERNAME_LIST:}")
@@ -126,14 +127,15 @@ public class StartupRunner implements CommandLineRunner {
     @Value("${ATCODER_ACCOUNT_PASSWORD_LIST:}")
     private List<String> atcoderPasswordList;
 
-    @Value("${SPOJ_ACCOUNT_USERNAME_LIST:}")
+    @Value("${SPOJ_ACCOUNT_USERNAME_LIST:popcorn666}")
     private List<String> spojUsernameList;
 
-    @Value("${SPOJ_ACCOUNT_PASSWORD_LIST:}")
+    @Value("${SPOJ_ACCOUNT_PASSWORD_LIST:popcorn@666}")
     private List<String> spojPasswordList;
-
     @Value("${spring.profiles.active}")
     private String profile;
+
+
 
 
     @Override
@@ -193,6 +195,8 @@ public class StartupRunner implements CommandLineRunner {
 
         if (openRemoteJudge.equals("true")) {
             // 初始化清空表
+            log.error("$!#$#$!$");
+            log.error(""+openRemoteJudge);
             remoteJudgeAccountService.remove(new QueryWrapper<>());
             addRemoteJudgeAccountToMySQL(Constants.RemoteOJ.HDU.getName(), hduUsernameList, hduPasswordList);
             addRemoteJudgeAccountToMySQL(Constants.RemoteOJ.POJ.getName(), pojUsernameList, pojPasswordList);
