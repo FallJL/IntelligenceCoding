@@ -28,6 +28,7 @@ export const m = {
   Discussion_Admin:'Admin Discussion',
   Home_Page:'Home Page',
   Logout:'Logout',
+  Log_Out_Successfully:'Log out successfully',
 
   // /views/admin/Dashboard.vue
   Last_Login: 'Last Login',
@@ -67,7 +68,7 @@ export const m = {
   Import_User: 'Import User',
   Import_User_Tips1:'The imported user data only supports user data in CSV format.',
   Import_User_Tips2:'There are seven columns of data: username, password, email, realname and gender. The username and password cannot be empty, others can be enmpty, otherwise the data in this row may fail to be imported.',
-  Import_User_Tips3:'The first line does not need to write the three column names ("username", "password", "email","realname","gender","nickname","school").',
+  Import_User_Tips3:'The first line does not need to write the seven column names ("username", "password", "email","realname","gender","nickname","school").',
   Import_User_Tips4:'If the gender is male, please use "male" or "0", if the gender is female, please use "female" or "1". If it is not filled in, it is assumed to be "secrecy".',
   Import_User_Tips5:'Please import the file saved as UTF-8 code, otherwise Chinese may be garbled.',
   Choose_File:'Choose File',
@@ -86,6 +87,8 @@ export const m = {
   The_usernames_will_be:'The usernames will be',
   Set_New_PWD:'Set PWD',
   General_New_Password: 'New PWD',
+  Title_Color:'Title Color',
+  Title_Name:'Title Name',
   The_end_number_cannot_be_less_than_the_start_number:'The end number cannot be less than the start number',
   Please_select_6_to_25_characters_for_password_length:'Please select 6 ~ 25 characters for password length',
   Start_Number_Required:'The Start Number is required.',
@@ -207,6 +210,7 @@ export const m = {
   SPJ_Language: 'SPJ Program Language',
   Interactive_Language:'Interactive Program Langugae',
   Compile: 'Compile',
+  Compiled_Successfully:'Compiled Successfully',
   Code_Template: 'Code Template',
   Type: 'Type',
   Judge_Samples:'Judge Samples',
@@ -296,6 +300,8 @@ export const m = {
   Import_QDOJ_Problem:'Import QDOJ Problem',
   Import_FPS_Problem:'Import FPS Problem',
   Export_Problem_NULL_Tips:'The problem selected for export cannot be empty',
+  Upload_Problem_Succeeded:'Upload Problem Succeeded',
+  Upload_Problem_Failed:'Upload Problem Failed',
 
   // /views/admin/contest/ContestList.vue
   Visible:'Visible',
@@ -304,6 +310,8 @@ export const m = {
   View_Contest_Announcement_List:'View Contest Announcement List',
   Download_Contest_AC_Submission:'Download Contest AC Submissions',
   Exclude_admin_submissions:'Exclude admin submissions',
+  SplitType_User:'Split folders by username',
+  SplitType_Problem:'Split folders by problem id',
   Delete_Contest_Tips:'This operation will delete the contest and its submission, discussion, announcement, record and other data. Do you want to continue?',  
   
   // /views/admin/contest/Contest.vue
@@ -318,6 +326,9 @@ export const m = {
   Seal_Rank_Time:'Seal Rank Time',
   Contest_Auth: 'Contest Auth',
   Contest_Password:'Contest Password',
+  OI_Rank_Score_Type:'OI RANK Score Type',
+  OI_Rank_Score_Type_Recent:'Use Recent Score',
+  OI_Rank_Score_Type_Highest:'Use Highest Score',
   Contest_Seal_Half_Hour:'Half an hour',
   Contest_Seal_An_Hour:'An hour',
   Contest_Seal_All_Hour:'All hours',

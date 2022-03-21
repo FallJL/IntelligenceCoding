@@ -148,14 +148,41 @@
                       {{ getDuration(contest.startTime, contest.endTime) }}
                     </li>
                     <li>
-                      <el-button
-                        size="mini"
-                        round
-                        :type="contest.type == 0 ? 'primary' : 'warning'"
-                        @click="onRuleChange(contest.type)"
-                        ><i class="fa fa-trophy"></i>
-                        {{ contest.type | parseContestType }}
-                      </el-button>
+                      <template v-if="contest.type == 0">
+                        <el-button
+                          size="mini"
+                          round
+                          :type="'primary'"
+                          @click="onRuleChange(contest.type)"
+                          ><i class="fa fa-trophy"></i>
+                          {{ contest.type | parseContestType }}
+                        </el-button>
+                      </template>
+                      <template v-else>
+                        <el-tooltip
+                          :content="
+                            $t('m.Contest_Rank') +
+                              '：' +
+                              (contest.oiRankScoreType == 'Recent'
+                                ? $t(
+                                    'm.Based_on_The_Recent_Score_Submitted_Of_Each_Problem'
+                                  )
+                                : $t(
+                                    'm.Based_on_The_Highest_Score_Submitted_For_Each_Problem'
+                                  ))
+                          "
+                          placement="top"
+                        >
+                          <el-button
+                            size="mini"
+                            round
+                            :type="'warning'"
+                            @click="onRuleChange(contest.type)"
+                            ><i class="fa fa-trophy"></i>
+                            {{ contest.type | parseContestType }}
+                          </el-button>
+                        </el-tooltip>
+                      </template>
                     </li>
                     <li>
                       <el-tooltip
@@ -230,7 +257,7 @@
       <Pagination
         :total="total"
         :pageSize="limit"
-        @on-change="getContestList"
+        @on-change="onCurrentPageChange"
         :current.sync="currentPage"
       ></Pagination>
     </el-col>
@@ -276,6 +303,10 @@ export default {
       loading: true,
     };
   },
+  created() {
+    let route = this.$route.query;
+    this.currentPage = parseInt(route.currentPage) || 1;
+  },
   mounted() {
     this.CONTEST_STATUS_REVERSE = Object.assign({}, CONTEST_STATUS_REVERSE);
     this.CONTEST_TYPE_REVERSE = Object.assign({}, CONTEST_TYPE_REVERSE);
@@ -288,12 +319,11 @@ export default {
       this.query.status = route.status || '';
       this.query.type = route.type || '';
       this.query.keyword = route.keyword || '';
-      this.currentPage = parseInt(route.currentPage) || 1;
       this.getContestList();
     },
-    getContestList(page = 1) {
+    getContestList() {
       this.loading = true;
-      api.getContestList(page, this.limit, this.query).then(
+      api.getContestList(this.currentPage, this.limit, this.query).then(
         (res) => {
           this.contests = res.data.data.records;
           this.total = res.data.data.total;
@@ -304,6 +334,7 @@ export default {
         }
       );
     },
+
     filterByChange() {
       let query = Object.assign({}, this.query);
       query.currentPage = this.currentPage;
@@ -320,6 +351,12 @@ export default {
         return 'OI';
       }
     },
+
+    onCurrentPageChange(page) {
+      this.currentPage = page;
+      this.filterByChange();
+    },
+
     onRuleChange(rule) {
       this.query.type = rule;
       this.currentPage = 1;

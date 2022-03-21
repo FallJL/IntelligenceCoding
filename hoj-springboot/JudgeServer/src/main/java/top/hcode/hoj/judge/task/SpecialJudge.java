@@ -1,5 +1,6 @@
 package top.hcode.hoj.judge.task;
 
+import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.io.file.FileWriter;
 import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
@@ -36,7 +37,8 @@ public class SpecialJudge extends AbstractJudge {
                 judgeDTO.getMaxOutputSize(),
                 judgeGlobalDTO.getMaxStack(),
                 runConfig.getExeName(),
-                judgeGlobalDTO.getUserFileId());
+                judgeGlobalDTO.getUserFileId(),
+                judgeGlobalDTO.getUserFileSrc());
     }
 
 
@@ -83,6 +85,10 @@ public class SpecialJudge extends AbstractJudge {
                         testCaseOutputFileName,
                         spjExeSrc,
                         spjRunConfig);
+
+                // 删除用户输出文件
+                FileUtil.del(userOutputFilePath);
+
                 int code = spjResult.getInt("code");
                 if (code == SPJ_WA) {
                     result.set("status", Constants.Judge.STATUS_WRONG_ANSWER.getStatus());
@@ -105,9 +111,9 @@ public class SpecialJudge extends AbstractJudge {
         } else if (sandBoxRes.getExitCode() != 0) {
             result.set("status", Constants.Judge.STATUS_RUNTIME_ERROR.getStatus());
             if (sandBoxRes.getExitCode() < 32) {
-                errMsg.append(String.format("Your program return ExitCode: %s (%s)\n", sandBoxRes.getExitCode(), SandboxRun.signals.get(sandBoxRes.getExitCode())));
+                errMsg.append(String.format("The program return exit status code: %s (%s)\n", sandBoxRes.getExitCode(), SandboxRun.signals.get(sandBoxRes.getExitCode())));
             } else {
-                errMsg.append(String.format("Your program return ExitCode: %s\n", sandBoxRes.getExitCode()));
+                errMsg.append(String.format("The program return exit status code: %s\n", sandBoxRes.getExitCode()));
             }
         } else {
             result.set("status", sandBoxRes.getStatus());
@@ -120,15 +126,8 @@ public class SpecialJudge extends AbstractJudge {
 
         // 记录该测试点的错误信息
         if (!StringUtils.isEmpty(errMsg.toString())) {
-            result.set("errMsg", errMsg.toString());
-        }
-
-        if (!StringUtils.isEmpty(sandBoxRes.getStderr())) {
-            // 同时记录错误信息
-            errMsg.append(sandBoxRes.getStderr());
-            // 对于当前测试样例，用户的错误提示生成对应文件
-            FileWriter errWriter = new FileWriter(judgeGlobalDTO.getRunDir() + File.separator + judgeDTO.getTestCaseId() + ".err");
-            errWriter.write(sandBoxRes.getStderr());
+            String str = errMsg.toString();
+            result.set("errMsg", str.substring(0, Math.min(1024 * 1024, str.length())));
         }
 
         return result;

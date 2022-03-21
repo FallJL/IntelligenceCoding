@@ -107,6 +107,7 @@ export const m = {
   Save:'Save',
   Upload:'Upload',
   Your_new_avatar:'Your new avatar',
+  Upload_Avatar_Successfully:'Upload avatar successfully',
   File_type_not_support:'File type not support',
   is_incorrect_format_file:' is an incorrect format file,please choose the file format of .GIF, .JPG, .JPEG, .PNG, .BMP, .Webp',
   Exceed_max_size_limit:'Exceed max size limit',
@@ -169,6 +170,7 @@ export const m = {
   My_OJ:'Mine',
   Level:'Level',
   Tags:'Tags',
+  Search_Filter_Tag:'Enter the tag name...',
   Pick_a_random_question:'Pick a random question',
   Touch_Get_Status:'Please touch or hover the mouse to the designated problem line to view the submission status',
   Good_luck_to_you:'Good luck to you!',
@@ -237,6 +239,7 @@ export const m = {
   Submit_Time:'Submit Time',
   Option: 'Option',
   Rejudge: 'Rejudge',
+  Resubmitted_Successfully:'Resubmitted Successfully!',
   Refresh:'Refresh',
   Enter_Problem_ID:'Enter Problem ID',
   Enter_Author:'Enter Author',
@@ -246,16 +249,18 @@ export const m = {
   OI_Rank_Score:'OI Rank Score',
   OI_Rank_Calculation_Rule:'OI Rank Calculation Rule',
 
+
   // /views/oj/status/SubmissionDetails.vue
   Test_point_details:'Test point details',
   Copy:'Copy',
   Shared:'Shared',
   Unshared:'Unshared',
   Shared_successfully:'Shared successfully',
+  Cancel_Sharing_Successfully:'Cancel Sharing Succeessfully',
   Input_File:'Input File',
   Output_File:'Output File',
   Case_tips:'Case Tips',
-  Unknown:'Unknown',
+  Nothing:'Nothing',
 
   // /views/oj/rank/ACMRank.vue
   ACM_Ranklist: 'ACM Ranklist',
@@ -272,6 +277,8 @@ export const m = {
   Go_to_problem:"Go to Problem",
   Release_Time:'Release Time',
   Likes:'Likes',
+  Like_Successfully:'Like Successfully',
+  Cancel_Like_Successfully:'Cancel Successfully',
   Views:'Views',
   Edit:'Edit',
   Delete:'Delete',
@@ -291,11 +298,12 @@ export const m = {
   Delete_successfully:'Delete successfully',
   Post_successfully:'Post successfully',
 
-  // /views/oj/discussion/discussionList.vue
+  // /views/oj/discussion/discussion.vue
   Report:'Report',
   Like:'Like',
   Liked:'Liked',
   Report_Reason:'Report Reason',
+  The_report_label_and_reason_cannot_be_empty:'The report label and reason cannot be empty.',
   
   // 404.vue
   Page_Not_Found:"Sorry, the page can't be found",
@@ -382,6 +390,8 @@ export const m = {
 
   // /views/oj/contest/children/OIContestRank.vue
   Total_Score: 'Total Score',
+  Based_on_The_Highest_Score_Submitted_For_Each_Problem:'Based on the highest score submitted for each problem',
+  Based_on_The_Recent_Score_Submitted_Of_Each_Problem:'Based on the recent score submitted of each problem',
 
   // /views/oj/about/Introduction.vue
   Compiler: 'Compiler',
@@ -445,6 +455,8 @@ export const m = {
   Submit_Comment:'Submit',
   All_Comment:'All Comment',
   Reply:'Reply',
+  Reply_Successfully:'Reply Successfully',
+  Comment_Successfully:'Comment Successfully',
   Reply_Total:'Total',
   Replies:'replies',
   Click_Show_All:'Click to Show All',

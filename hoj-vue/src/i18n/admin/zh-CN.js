@@ -28,6 +28,7 @@ export const m = {
   Discussion_Admin:'讨论管理',
   Home_Page:'主页',
   Logout:'退出登录',
+  Log_Out_Successfully:'退出登录成功',
 
   // /views/admin/Dashboard.vue
   Last_Login: '最近登录',
@@ -67,7 +68,7 @@ export const m = {
   Import_User: '导入用户',
   Import_User_Tips1:'用户数据导入仅支持csv格式的用户数据。',
   Import_User_Tips2:'共七列数据：用户名和密码不能为空，邮箱、真实姓名、性别、昵称和学校可选填，否则该行数据可能导入失败。',
-  Import_User_Tips3:'第一行不必写(“用户名”，“密码”，“邮箱”，"真实姓名"，“性别”，“昵称”，“学校”)这四个列名',
+  Import_User_Tips3:'第一行不必写(“用户名”，“密码”，“邮箱”，"真实姓名"，“性别”，“昵称”，“学校”)这七个列名',
   Import_User_Tips4:'性别为男请使用“male”或“0”，女请使用“female”或“1”，不填默认为“secrecy”。',
   Import_User_Tips5:'请导入保存为UTF-8编码的文件，否则中文可能会乱码。',
   Choose_File:'选择文件',
@@ -86,6 +87,8 @@ export const m = {
   The_usernames_will_be:'生成的用户名将会是',
   Set_New_PWD:'设置新密码',
   General_New_Password: '新密码',
+  Title_Color:'头衔颜色',
+  Title_Name:'头衔名称',
   The_end_number_cannot_be_less_than_the_start_number:'结束数字不能小于开始数字',
   Please_select_6_to_25_characters_for_password_length:'请输入6~25作为密码的长度',
   Start_Number_Required:'开始数字不能为空',
@@ -205,6 +208,7 @@ export const m = {
   Interactive_Language:'交互判题程序语言',
   SPJ_Language: '特殊判题程序语言',
   Compile: '编译',
+  Compiled_Successfully:'编译成功',
   Code_Template: '代码模板',
   Type: '类型',
   Judge_Samples:'评测数据',
@@ -257,6 +261,8 @@ export const m = {
   Import_QDOJ_Problem:'导入QDUOJ的题目',
   Import_FPS_Problem:'导入FPS格式的题目',
   Export_Problem_NULL_Tips:'选择导出的题目不能为空',
+  Upload_Problem_Succeeded:'上传题目成功',
+  Upload_Problem_Failed:'上传题目失败',
 
    // /views/admin/training/TrainingList.vue
    Order_Number:'序号',
@@ -300,6 +306,8 @@ export const m = {
   View_Contest_Announcement_List:'查看比赛公告列表',
   Download_Contest_AC_Submission:'下载比赛通过的提交代码',
   Exclude_admin_submissions:'排除管理员的提交',
+  SplitType_User:'以用户名分割文件夹',
+  SplitType_Problem:'以题目ID分割文件夹',
   Delete_Contest_Tips:'此操作将删除该比赛以及比赛的提交、讨论、公告、记录等数据, 是否继续?',
 
   // /views/admin/contest/Contest.vue
@@ -314,6 +322,9 @@ export const m = {
   Seal_Rank_Time:'封榜时间',
   Contest_Auth: '比赛权限',
   Contest_Password:'比赛密码',
+  OI_Rank_Score_Type:'OI排行榜得分类型',
+  OI_Rank_Score_Type_Recent:'使用最近得分',
+  OI_Rank_Score_Type_Highest:'使用最高得分',
   Contest_Seal_Half_Hour:'比赛结束前半小时',
   Contest_Seal_An_Hour:'比赛结束前一小时',
   Contest_Seal_All_Hour:'比赛全程',

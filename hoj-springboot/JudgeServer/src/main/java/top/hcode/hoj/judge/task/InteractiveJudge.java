@@ -42,6 +42,7 @@ public class InteractiveJudge extends AbstractJudge {
                 runConfig.getEnvs(),
                 runConfig.getExeName(),
                 judgeGlobalDTO.getUserFileId(),
+                judgeGlobalDTO.getUserFileSrc(),
                 judgeGlobalDTO.getTestTime(),
                 judgeGlobalDTO.getMaxMemory(),
                 judgeGlobalDTO.getMaxStack(),
@@ -80,9 +81,9 @@ public class InteractiveJudge extends AbstractJudge {
             // Broken Pipe
             result.set("status", Constants.Judge.STATUS_RUNTIME_ERROR.getStatus());
             if (userExitCode < 32) {
-                errMsg.append(String.format("Your program return exitCode: %s (%s)\n", userExitCode, SandboxRun.signals.get(userExitCode)));
+                errMsg.append(String.format("The program return exit status code: %s (%s)\n", userExitCode, SandboxRun.signals.get(userExitCode)));
             } else {
-                errMsg.append(String.format("Your program return exitCode: %s\n", userExitCode));
+                errMsg.append(String.format("The program return exit status code: %s\n", userExitCode));
             }
         } else {
             // 根据交互程序的退出状态码及输出进行判断
@@ -116,7 +117,8 @@ public class InteractiveJudge extends AbstractJudge {
 
         // 记录该测试点的错误信息
         if (!StringUtils.isEmpty(errMsg.toString())) {
-            result.set("errMsg", errMsg.toString());
+            String str = errMsg.toString();
+            result.set("errMsg", str.substring(0, Math.min(1024 * 1024, str.length())));
         }
 
         return result;

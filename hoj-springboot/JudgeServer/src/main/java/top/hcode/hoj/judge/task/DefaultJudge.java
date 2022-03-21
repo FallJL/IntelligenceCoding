@@ -34,7 +34,8 @@ public class DefaultJudge extends AbstractJudge {
                 judgeDTO.getMaxOutputSize(),
                 judgeGlobalDTO.getMaxStack(),
                 runConfig.getExeName(),
-                judgeGlobalDTO.getUserFileId());
+                judgeGlobalDTO.getUserFileId(),
+                judgeGlobalDTO.getUserFileSrc());
     }
 
     @Override
@@ -61,9 +62,9 @@ public class DefaultJudge extends AbstractJudge {
         } else if (sandBoxRes.getExitCode() != 0) {
             result.set("status", Constants.Judge.STATUS_RUNTIME_ERROR.getStatus());
             if (sandBoxRes.getExitCode() < 32) {
-                errMsg.append(String.format("Your program return ExitCode: %s (%s)\n", sandBoxRes.getExitCode(), SandboxRun.signals.get(sandBoxRes.getExitCode())));
+                errMsg.append(String.format("The program return exit status code: %s (%s)\n", sandBoxRes.getExitCode(), SandboxRun.signals.get(sandBoxRes.getExitCode())));
             } else {
-                errMsg.append(String.format("Your program return ExitCode: %s\n", sandBoxRes.getExitCode()));
+                errMsg.append(String.format("The program return exit status code: %s\n", sandBoxRes.getExitCode()));
             }
         } else {
             result.set("status", sandBoxRes.getStatus());
@@ -74,23 +75,16 @@ public class DefaultJudge extends AbstractJudge {
         // ns->ms
         result.set("time", sandBoxRes.getTime());
 
-        if (!StringUtils.isEmpty(sandBoxRes.getStdout())) {
-            // 对于当前测试样例，用户程序的输出对应生成的文件
-            FileWriter stdWriter = new FileWriter(judgeGlobalDTO.getRunDir() + "/" + judgeDTO.getTestCaseId() + ".out");
-            stdWriter.write(sandBoxRes.getStdout());
-        }
-
-        if (!StringUtils.isEmpty(sandBoxRes.getStderr())) {
-            // 对于当前测试样例，用户的错误提示生成对应文件
-            FileWriter errWriter = new FileWriter(judgeGlobalDTO.getRunDir() + "/" + judgeDTO.getTestCaseId() + ".err");
-            errWriter.write(sandBoxRes.getStderr());
-            // 同时记录错误信息
-            errMsg.append(sandBoxRes.getStderr());
-        }
+//        if (!StringUtils.isEmpty(sandBoxRes.getStdout())) {
+//            // 对于当前测试样例，用户程序的输出对应生成的文件
+//            FileWriter stdWriter = new FileWriter(judgeGlobalDTO.getRunDir() + "/" + judgeDTO.getTestCaseId() + ".out");
+//            stdWriter.write(sandBoxRes.getStdout());
+//        }
 
         // 记录该测试点的错误信息
         if (!StringUtils.isEmpty(errMsg.toString())) {
-            result.set("errMsg", errMsg.toString());
+            String str = errMsg.toString();
+            result.set("errMsg", str.substring(0, Math.min(1024 * 1024, str.length())));
         }
 
         if (judgeGlobalDTO.getNeedUserOutputFile()) { // 如果需要获取用户对于该题目的输出

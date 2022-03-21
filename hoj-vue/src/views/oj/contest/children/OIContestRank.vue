@@ -1,7 +1,13 @@
 <template>
   <el-card shadow>
     <div slot="header">
-      <span class="panel-title">{{ $t('m.Contest_Rank') }}</span>
+      <span class="panel-title"
+        >{{ $t('m.Contest_Rank') }}（{{
+          contest.oiRankScoreType == 'Recent'
+            ? $t('m.Based_on_The_Recent_Score_Submitted_Of_Each_Problem')
+            : $t('m.Based_on_The_Highest_Score_Submitted_For_Each_Problem')
+        }}）</span
+      >
       <span style="float:right;font-size: 20px;">
         <el-popover trigger="hover" placement="left-start">
           <i class="el-icon-s-tools" slot="reference"></i>
@@ -38,7 +44,7 @@
                 ></el-switch>
               </p>
             </template>
-            <template>
+            <template v-if="isContestAdmin">
               <el-button type="primary" size="small" @click="downloadRankCSV">{{
                 $t('m.Download_as_CSV')
               }}</el-button>
@@ -60,6 +66,7 @@
         ref="OIContestRank"
         :data="dataRank"
         :cell-class-name="cellClassName"
+        @cell-click="getUserProblemSubmission"
       >
         <vxe-table-column
           field="rank"
@@ -216,9 +223,10 @@
           min-width="80"
           v-for="problem in contestProblems"
           :key="problem.displayId"
+          :field="problem.displayId"
         >
           <template v-slot:header>
-            <span style="vertical-align: top;" v-if="problem.color">
+            <span v-if="problem.color" class="contest-rank-balloon">
               <svg
                 t="1633685184463"
                 class="icon"
@@ -237,6 +245,16 @@
               </svg>
             </span>
             <span>
+              <a
+                @click="getContestProblemById(problem.displayId)"
+                class="emphasis"
+                style="color:#495060;"
+              >
+                {{ problem.displayId }}
+              </a>
+            </span>
+            <br />
+            <span>
               <el-tooltip effect="dark" placement="top">
                 <div slot="content">
                   {{ problem.displayId + '. ' + problem.displayTitle }}
@@ -245,17 +263,15 @@
                   <br />
                   {{ 'Rejected: ' + (problem.total - problem.ac) }}
                 </div>
-                <a
-                  @click="getContestProblemById(problem.displayId)"
-                  class="emphasis"
-                  style="color:#495060;"
-                  >{{ problem.displayId }}({{ problem.ac }}/{{ problem.total }})
-                </a>
+                <span>({{ problem.ac }}/{{ problem.total }}) </span>
               </el-tooltip>
             </span>
           </template>
           <template v-slot="{ row }">
-            <div v-if="row.submissionInfo[problem.displayId]">
+            <div
+              v-if="row.submissionInfo[problem.displayId]"
+              class="submission-hover"
+            >
               <span>{{ row.submissionInfo[problem.displayId] }}</span>
               <br />
               <span
@@ -439,6 +455,19 @@ export default {
         },
       });
     },
+    getUserProblemSubmission({ row, column }) {
+      if (
+        column.property !== 'rank' &&
+        column.property !== 'totalScore' &&
+        column.property !== 'username' &&
+        column.property !== 'realname'
+      ) {
+        this.$router.push({
+          name: 'ContestSubmissionList',
+          query: { username: row.username, problemID: column.property },
+        });
+      }
+    },
     applyToChart(rankData) {
       let [user, scores] = [[], []];
       let len = rankData.length;
@@ -458,20 +487,21 @@ export default {
     },
     applyToTable(dataRank) {
       dataRank.forEach((rank, i) => {
-        let info = rank.submissionInfo;
+        let submissionInfo = rank.submissionInfo;
+        let timeInfo = rank.timeInfo;
         let cellClass = {};
         if (this.concernedList.indexOf(rank.uid) != -1) {
           dataRank[i].isConcerned = true;
         }
-        Object.keys(info).forEach((problemID) => {
-          dataRank[i][problemID] = info[problemID];
-          let score = info[problemID];
-          if (score == 0) {
-            cellClass[problemID] = 'oi-0';
-          } else if (score > 0 && score < 100) {
-            cellClass[problemID] = 'oi-between';
-          } else if (score == 100) {
+        Object.keys(submissionInfo).forEach((problemID) => {
+          dataRank[i][problemID] = submissionInfo[problemID];
+          let score = submissionInfo[problemID];
+          if (timeInfo != null && timeInfo[problemID] != undefined) {
             cellClass[problemID] = 'oi-100';
+          } else if (score == 0) {
+            cellClass[problemID] = 'oi-0';
+          } else if (score != null) {
+            cellClass[problemID] = 'oi-between';
           }
         });
         dataRank[i].cellClassName = cellClass;
@@ -549,7 +579,7 @@ a.emphasis {
   color: #495060 !important;
 }
 a.emphasis:hover {
-  color: #2d8cf0;
+  color: #2d8cf0 !important;
 }
 .problem-time {
   color: rgba(0, 0, 0, 0.45);

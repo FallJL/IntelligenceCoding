@@ -106,6 +106,7 @@ export const m = {
   Save:'保存',
   Upload:'上传',
   Your_new_avatar:'您的新头像',
+  Upload_Avatar_Successfully:'上传头像成功',
   File_type_not_support:'文件类型不支持',
   is_incorrect_format_file:'的文件格式不正确，请选择.gif,.jpg,.jpeg,.png,.bmp,.webp的图片文件。',
   Exceed_max_size_limit:'超过文件大小限制',
@@ -170,6 +171,7 @@ export const m = {
   My_OJ:'主题库',
   Level:'难度',
   Tags:'标签',
+  Search_Filter_Tag:'输入标签名称...',
   Pick_a_random_question:'随机选一题',
   Touch_Get_Status:'请点击或悬停鼠标至问题行查看提交状态',
   Good_luck_to_you:'祝你好运!',
@@ -239,6 +241,7 @@ export const m = {
   Submit_Time:'提交时间',
   Option: '操作',
   Rejudge: '重新评测',
+  Resubmitted_Successfully:'重新提交成功！',
   Refresh:'刷新',
   Enter_Problem_ID:'请输入题目ID',
   Enter_Author:'请输入作者',
@@ -255,10 +258,11 @@ export const m = {
   Shared:'分享',
   Unshared:'不分享',
   Shared_successfully:'分享成功',
+  Cancel_Sharing_Successfully:'取消分享成功',
   Input_File:'输入文件',
   Output_File:'输出文件',
   Case_tips:'信息提示',
-  Unknown:'未知',
+  Nothing:'无',
 
   // /views/oj/rank/ACMRank.vue
   ACM_Ranklist: 'ACM 排行榜',
@@ -275,6 +279,8 @@ export const m = {
   Go_to_problem:'前往原题',
   Release_Time:'发布时间',
   Likes:'点赞',
+  Like_Successfully:'点赞成功',
+  Cancel_Like_Successfully:'取消成功',
   Views:'浏览',
   Edit:'编辑',
   Delete:'删除',
@@ -294,11 +300,12 @@ export const m = {
   Delete_successfully:'删除成功',
   Post_successfully:'发布成功',
 
-  // /views/oj/discussion/discussionList.vue
+  // /views/oj/discussion/discussion.vue
   Report:'举报',
   Like:'点赞',
   Liked:'已点赞',
   Report_Reason:'举报原因',
+  The_report_label_and_reason_cannot_be_empty:'举报标签和理由不能都为空',
 
   // 404.vue
   Page_Not_Found:"页面找不到啦",
@@ -385,6 +392,8 @@ export const m = {
 
    // /views/oj/contest/children/OIContestRank.vue
    Total_Score: '总分',
+   Based_on_The_Highest_Score_Submitted_For_Each_Problem:'以每题提交的最高得分计算',
+   Based_on_The_Recent_Score_Submitted_Of_Each_Problem:'以每题提交的最近得分计算',
 
    // /views/oj/about/Introduction.vue
    Compiler: '编译器',
@@ -448,6 +457,8 @@ export const m = {
   Submit_Comment:'提交评论',
   All_Comment:'全部评论',
   Reply:'回复',
+  Reply_Successfully:'回复成功',
+  Comment_Successfully:'评论成功',
   Reply_Total:'总共',
   Replies:'条回复',
   Click_Show_All:'点击查看全部',

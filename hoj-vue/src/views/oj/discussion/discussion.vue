@@ -30,6 +30,11 @@
               ></avatar>
               <span class="user-name">{{ discussion.author }}</span>
             </a>
+            <span v-if="discussion.titleName">
+              <el-tag effect="dark" size="small" :color="discussion.titleColor">
+                {{ discussion.titleName }}
+              </el-tag>
+            </span>
           </span>
           <span
             class="role-root role"
@@ -104,11 +109,18 @@
         </div>
       </div>
       <div class="body-article">
-        <div
-          class="markdown-body"
-          v-dompurify-html="contentHtml"
-          v-highlight
-        ></div>
+        <template
+          v-if="discussion.role == 'root' || discussion.role == 'admin'"
+        >
+          <div class="markdown-body" v-html="contentHtml" v-highlight></div>
+        </template>
+        <template v-else>
+          <div
+            class="markdown-body"
+            v-dompurify-html="contentHtml"
+            v-highlight
+          ></div>
+        </template>
       </div>
     </div>
     <el-dialog
@@ -294,11 +306,12 @@ export default {
         return;
       }
       api.toLikeDiscussion(did, toLike).then((res) => {
-        myMessage.success(res.data.msg);
         if (toLike) {
           this.discussion.likeNum++;
           this.discussion.hasLike = true;
+          myMessage.success(this.$i18n.t('m.Like_Successfully'));
         } else {
+          myMessage.success(this.$i18n.t('m.Cancel_Like_Successfully'));
           this.discussion.likeNum--;
           this.discussion.hasLike = false;
         }
@@ -322,7 +335,9 @@ export default {
         return;
       }
       if (this.report.tagList.length == 0 && !this.report.content) {
-        myMessage.warning('举报标签和理由不能都为空');
+        myMessage.warning(
+          this.$i18n.t('m.The_report_label_and_reason_cannot_be_empty')
+        );
         return;
       }
       var reportMsg = '';
@@ -394,7 +409,7 @@ export default {
   color: #999;
 }
 .title-article .title-msg span {
-  margin-right: 3px;
+  margin-right: 2px;
 }
 .title-article .title-msg span a.c999 {
   color: #999 !important;
