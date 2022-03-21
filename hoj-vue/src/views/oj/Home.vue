@@ -312,12 +312,6 @@ export default {
       srcHight: '440px',
       remoteJudgeList: [
         {
-          url: 'http://acm.hdu.edu.cn',
-          name: 'HDU',
-          logo: require('@/assets/hdu-logo.png'),
-          status: false,
-        },
-        {
           url: 'http://poj.org',
           name: 'POJ',
           logo: require('@/assets/poj-logo.png'),

@@ -13,6 +13,7 @@ export const m = {
   NavBar_Introduction: 'Introduction',
   NavBar_Developer:'Developer',
   NavBar_Login: 'Login',
+  NavBar_ExternalSearch: 'ExternalSearch',
   NavBar_Register: 'Register',
   NavBar_UserHome: 'Home',
   NavBar_Submissions: 'Submissions',
@@ -142,7 +143,7 @@ export const m = {
   Recent_7_Days_AC_Rank:'Recent 7 Days AC Top 10 Rank',
   Other_OJ_Contest:'Other Online Judge Contest',
   Supported_Remote_Online_Judge:'Supported Remote Online Judge',
-
+  Common_Websites:'Common Websites',
 
   // 表格通用列名,按钮，搜索框等
   Enter_keyword:'Enter keyword',

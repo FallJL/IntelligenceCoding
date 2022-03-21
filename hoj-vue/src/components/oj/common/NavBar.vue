@@ -46,6 +46,7 @@
           }}</el-menu-item>
         </el-submenu>
 
+
         <el-menu-item index="/discussion"
           ><i class="el-icon-s-comment"></i
           >{{ $t('m.NavBar_Discussion') }}</el-menu-item
@@ -62,6 +63,11 @@
             $t('m.NavBar_Developer')
           }}</el-menu-item>
         </el-submenu>
+
+        <el-menu-item index="/externalSearch"
+          ><i class="el-icon-question"></i
+          >{{ $t('m.NavBar_ExternalSearch') }}
+        </el-menu-item>
 
         <template v-if="!isAuthenticated">
           <div class="btn-menu">
@@ -509,6 +515,21 @@
               }}</mu-list-item-title>
             </mu-list-item>
           </mu-list-item>
+
+          <mu-list-item
+              button
+              to="/externalSearch"
+              @click="opendrawer = !opendrawer"
+              active-class="mobile-menu-active"
+          >
+            <mu-list-item-action>
+              <mu-icon value=":el-icon-question" size="24"></mu-icon>
+            </mu-list-item-action>
+            <mu-list-item-title>{{
+                $t('m.NavBar_ExternalSearch')
+              }}</mu-list-item-title>
+          </mu-list-item>
+
         </mu-list>
       </mu-drawer>
     </div>
@@ -562,7 +583,7 @@ export default {
       openusermenu: false,
       openmsgmenu: false,
       openSideMenu: '',
-      imgUrl: require('@/assets/logo.png'),
+      imgUrl: require('@/assets/scu.jpg'),
 
       avatarStyle:
         'display: inline-flex;width: 30px;height: 30px;border-radius: 50%;align-items: center;justify-content: center;text-align: center;user-select: none;',

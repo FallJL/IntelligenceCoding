@@ -33,6 +33,7 @@ import TrainingDetails from "@/views/oj/training/TrainingDetails.vue"
 import TrainingProblemList from "@/views/oj/training/TrainingProblemList.vue"
 import TrainingRank from "@/views/oj/training/TrainingRank.vue"
 import NotFound from "@/views/404.vue"
+import ExternalSearch from "@/views/oj/externalSearch/externalSearch.vue"
 
 const ojRoutes = [
   {
@@ -258,6 +259,11 @@ const ojRoutes = [
     path: '/developer',
     meta: {title: 'Developer'},
     component:Developer,
+  },
+  {
+    path: '/externalSearch',
+    meta: {title: 'externalSearch'},
+    component:ExternalSearch,
   },
   {
     name:'Message',

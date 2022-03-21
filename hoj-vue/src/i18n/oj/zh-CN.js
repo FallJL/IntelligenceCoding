@@ -10,6 +10,7 @@ export const m = {
   NavBar_OI_Rank: 'OI 排名',
   NavBar_Discussion: '讨论',
   NavBar_About: '关于',
+  NavBar_ExternalSearch:'外部搜索',
   NavBar_Introduction: '简介',
   NavBar_Developer:'开发者',
   NavBar_Login: '登录',
@@ -143,7 +144,7 @@ export const m = {
   Recent_7_Days_AC_Rank:'最近7天内AC排名',
   Other_OJ_Contest:'其它OJ的近期比赛',
   Supported_Remote_Online_Judge:'支持的远程评测平台',
-
+  Common_Websites:'常用网站',
 
   // 表格通用列名,按钮，搜索框等
   Enter_keyword:'输入关键词',
