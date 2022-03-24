@@ -54,14 +54,19 @@ public class ChooseUtils {
     public JudgeServer chooseServer(Boolean isRemote) {
         // 获取该微服务的所有健康实例
         List<Instance> instances = getInstances(JudgeServiceName);
+        System.out.println(instances);
         if (instances.size() <= 0) {
             return null;
         }
         List<String> keyList = new ArrayList<>();
         // 获取当前健康实例取出ip和port拼接
         for (Instance instance : instances) {
+            log.error(""+isRemote);
+            log.error("wtf......");
+            log.error(instance.getIp());
             keyList.add(instance.getIp() + ":" + instance.getPort());
         }
+
 
         // 过滤出小于或等于规定最大并发判题任务数的服务实例且健康的判题机
         QueryWrapper<JudgeServer> judgeServerQueryWrapper = new QueryWrapper<>();
@@ -85,8 +90,10 @@ public class ChooseUtils {
                 judgeServer.setTaskNumber(judgeServer.getTaskNumber() + 1);
                 boolean isOk = judgeServerEntityService.updateById(judgeServer);
                 if (isOk) {
+                    judgeServer.setUrl("192.168.1.146:8088");
                     return judgeServer;
                 }
+
             }
         }
 
@@ -132,6 +139,8 @@ public class ChooseUtils {
                         .eq(fixedTag, true);
                 boolean isOk = judgeServerEntityService.update(judgeServerUpdateWrapper);
                 if (isOk) {
+                    judgeServer.setUrl("192.168.1.146:8088");
+
                     return judgeServer;
                 }
             }
