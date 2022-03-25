@@ -15,7 +15,7 @@ const rootState = {
   },
   websiteConfig:{
     recordName:'© 2020-2021',
-    projectName:'HOJ',
+    projectName:'IC',
     shortName:'OJ',
     recordUrl:'#',
     projectUrl:'#'

@@ -20,6 +20,7 @@ export const m = {
   NavBar_Setting:'我的设置',
   NavBar_Management: '后台管理',
   NavBar_Logout: '退出登录',
+  NavBar_CommonWebsites: '常用网站',
   Dialog_Login: '登录',
   Dialog_Register:'注册',
   Dialog_Reset_Password:'重置密码',
@@ -230,7 +231,6 @@ export const m = {
 
   // /views/oj/status/SubmissionList.vue
   Mine:'我的',
-  ID: 'ID',
   Time: '运行时间',
   Memory: '运行内存',
   Length:'代码长度',

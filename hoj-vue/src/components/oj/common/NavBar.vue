@@ -66,7 +66,7 @@
 
         <el-menu-item index="/externalSearch"
           ><i class="el-icon-question"></i
-          >{{ $t('m.NavBar_ExternalSearch') }}
+          >{{ $t('m.NavBar_CommonWebsites') }}
         </el-menu-item>
 
         <template v-if="!isAuthenticated">
@@ -526,7 +526,7 @@
               <mu-icon value=":el-icon-question" size="24"></mu-icon>
             </mu-list-item-action>
             <mu-list-item-title>{{
-                $t('m.NavBar_ExternalSearch')
+                $t('m.NavBar_CommonWebsites')
               }}</mu-list-item-title>
           </mu-list-item>
 
@@ -584,7 +584,7 @@ export default {
       openusermenu: false,
       openmsgmenu: false,
       openSideMenu: '',
-      imgUrl: require('@/assets/scu.jpg'),
+      imgUrl: require('@/assets/intelligencecoding.jpg'),
 
       avatarStyle:
         'display: inline-flex;width: 30px;height: 30px;border-radius: 50%;align-items: center;justify-content: center;text-align: center;user-select: none;',

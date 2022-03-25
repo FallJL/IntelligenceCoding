@@ -20,6 +20,7 @@ export const m = {
   NavBar_Setting:'Setting',
   NavBar_Management: 'Management',
   NavBar_Logout: 'Logout',
+  NavBar_CommonWebsites: 'CommonWebsites',
   Dialog_Login: 'Login',
   Dialog_Register:'Register',
   Dialog_Reset_Password:'Reset Password',
