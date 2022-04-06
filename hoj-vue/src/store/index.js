@@ -15,10 +15,10 @@ const rootState = {
   },
   websiteConfig:{
     recordName:'© 2020-2021',
-    projectName:'IC',
+    projectName:'HOJ',
     shortName:'OJ',
     recordUrl:'#',
-    projectUrl:'#'
+    projectUrl:'https://www.github.com/HimitZH'
   },
   registerTimeOut: 60,
   resetTimeOut: 90,

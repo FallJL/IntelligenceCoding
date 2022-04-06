@@ -520,7 +520,7 @@ export default {
       mobileNar: false,
       currentPath: '',
       routeList: [],
-      imgUrl: require('@/assets/backstage.png'),
+      imgUrl: require('@/assets/intelligencecoding.jpg'),
     };
   },
   components: {

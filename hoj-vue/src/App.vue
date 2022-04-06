@@ -62,19 +62,12 @@
           </el-row>
         </div>
         <div class="mundb-footer">
-<!--          <a-->
-<!--            style="color:#1E9FFF"-->
-<!--            :href="websiteConfig.recordUrl"-->
-<!--            target="_blank"-->
-<!--            >{{ websiteConfig.recordName }}</a-->
-<!--          >-->
-          Powered by IC
-<!--          <a-->
-<!--            :href="websiteConfig.projectUrl"-->
-<!--            style="color:#1E9FFF"-->
-<!--            target="_blank"-->
-<!--            >{{ websiteConfig.projectName }}</a-->
-<!--          >-->
+          Powered by
+          <a
+              :href="websiteConfig.projectUrl"
+              style="color:#1E9FFF"
+              target="_blank"
+          >{{ websiteConfig.projectName }}</a>
           <span style="margin-left:10px">
             <el-dropdown @command="changeLanguage" placement="top">
               <span class="el-dropdown-link">

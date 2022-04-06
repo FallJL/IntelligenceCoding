@@ -153,10 +153,10 @@ export const PROBLEM_LEVEL={
 
 
 export const REMOTE_OJ = [
-  {
-    name:'HDU',
-    key:"HDU"
-  },
+  // {
+  //   name:'HDU',
+  //   key:"HDU"
+  // },
   {
     name:"Codeforces",
     key:"CF"
