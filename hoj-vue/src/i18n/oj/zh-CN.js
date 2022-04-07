@@ -205,7 +205,7 @@ export const m = {
   No_tag: '暂无标签',
   Statistic: '题目统计',
   Solutions: '全部提交',
-  Problem_Discussion: '题目讨论',
+  // Problem_Discussion: '题目讨论',
   Description: '题目描述',
   Input: '输入描述',
   Output: '输出描述',
@@ -244,7 +244,7 @@ export const m = {
 
   // /views/oj/status/SubmissionList.vue
   Mine:'我的',
-  ID: 'ID',
+  // ID: 'ID',
   Time: '运行时间',
   Memory: '运行内存',
   Length: '代码长度',
@@ -432,17 +432,18 @@ export const m = {
   Compile_Tips4:"itoa 不是ansi标准函数（标准 C/C++ 中无此函数）",
 
   // /views/oj/about/Developer.vue
-  Leader_BackEnd_FrontEnd_Engineer:'主导 & 后端 | 前端 开发者',
-  Distributed:'分布式',
-  Distributed_Desc:'前后端分离，支持判题微服务集群',
-  Customization:'定制化',
-  Customization_Desc:'网站配置高度集成，支持定制化修改',
-  Security:'安全性',
-  Security_Desc:'判题沙盒使用cgroup隔离，网站权限控制完善',
-  Diversity:'多样性',
-  Diversity_Desc:'支持Codefoces，POJ，GYM，AtCoder，SPOJ的远程判题',
-  Available:'有效',
-  Faulty:'不完善',
+  Leader_BackEnd_FrontEnd_Engineer: '主导 & 后端 | 前端 开发者',
+  Group_Function_Development_Contributor:'团队功能开发贡献者',
+  Distributed: '分布式',
+  Distributed_Desc: '前后端分离，支持判题微服务集群',
+  Customization: '定制化',
+  Customization_Desc: '网站配置高度集成，支持定制化修改',
+  Security: '安全性',
+  Security_Desc: '判题沙盒使用cgroup隔离，网站权限控制完善',
+  Diversity: '多样性',
+  Diversity_Desc: '支持Codefoces，HDU，POJ，GYM，AtCoder，SPOJ的远程判题',
+  Available: '有效',
+  Faulty: '不完善',
 
   // /components/oj/common/Announcements.vue
   Contest_Announcement: '比赛公告',
