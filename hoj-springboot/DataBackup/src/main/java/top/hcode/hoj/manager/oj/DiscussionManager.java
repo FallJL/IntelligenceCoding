@@ -1,5 +1,9 @@
 package top.hcode.hoj.manager.oj;
 
+import org.springframework.beans.factory.annotation.Value;
+import top.hcode.hoj.dao.problem.ProblemEntityService;
+import top.hcode.hoj.pojo.entity.problem.Problem;
+import top.hcode.hoj.validator.GroupValidator;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -55,13 +59,27 @@ public class DiscussionManager {
     @Autowired
     private UserAcproblemEntityService userAcproblemEntityService;
 
+    @Autowired
+    private ProblemEntityService problemEntityService;
+
+    @Autowired
+    private GroupValidator groupValidator;
+
+    @Value("${hoj.web-config.default-user-limit.discussion.daily}")
+    private Integer defaultCreateDiscussionDailyLimit;
+
+    @Value("${hoj.web-config.default-user-limit.discussion.ac-initial-value}")
+    private Integer defaultCreateDiscussionACInitValue;
+
     public IPage<Discussion> getDiscussionList(Integer limit,
                                                Integer currentPage,
                                                Integer categoryId,
                                                String pid,
-                                               Boolean onlyMine,
+                                               boolean onlyMine,
                                                String keyword,
-                                               Boolean admin) {
+                                               boolean admin) {
+        Session session = SecurityUtils.getSubject().getSession();
+        UserRolesVo userRolesVo = (UserRolesVo) session.getAttribute("userInfo");
 
         QueryWrapper<Discussion> discussionQueryWrapper = new QueryWrapper<>();
 
@@ -81,14 +99,18 @@ public class DiscussionManager {
                     .like("description", key));
         }
 
+        boolean isAdmin = SecurityUtils.getSubject().hasRole("root")
+                || SecurityUtils.getSubject().hasRole("problem_admin")
+                || SecurityUtils.getSubject().hasRole("admin");
+
         if (!StringUtils.isEmpty(pid)) {
             discussionQueryWrapper.eq("pid", pid);
         }
 
+        if (!(admin && isAdmin)) {
+            discussionQueryWrapper.isNull("gid");
+        }
 
-        boolean isAdmin = SecurityUtils.getSubject().hasRole("root")
-                || SecurityUtils.getSubject().hasRole("problem_admin")
-                || SecurityUtils.getSubject().hasRole("admin");
         discussionQueryWrapper
                 .eq(!(admin && isAdmin), "status", 0)
                 .orderByDesc("top_priority")
@@ -97,8 +119,6 @@ public class DiscussionManager {
                 .orderByDesc("view_num");
 
         if (onlyMine) {
-            Session session = SecurityUtils.getSubject().getSession();
-            UserRolesVo userRolesVo = (UserRolesVo) session.getAttribute("userInfo");
             discussionQueryWrapper.eq("uid", userRolesVo.getUid());
         }
 
@@ -111,56 +131,86 @@ public class DiscussionManager {
         Session session = SecurityUtils.getSubject().getSession();
         UserRolesVo userRolesVo = (UserRolesVo) session.getAttribute("userInfo");
 
+        boolean isRoot = SecurityUtils.getSubject().hasRole("root");
+
+        Discussion discussion = discussionEntityService.getById(did);
+
+        if (discussion.getGid() != null) {
+            if (!isRoot && !discussion.getUid().equals(userRolesVo.getUid()) && !groupValidator.isGroupMember(userRolesVo.getUid(), discussion.getGid())) {
+                throw new StatusForbiddenException("对不起，您无权限操作！");
+            }
+        }
+
         String uid = null;
 
         if (userRolesVo != null) {
             uid = userRolesVo.getUid();
         }
 
-        DiscussionVo discussion = discussionEntityService.getDiscussion(did, uid);
+        DiscussionVo discussionVo = discussionEntityService.getDiscussion(did, uid);
 
-        if (discussion == null) {
+        if (discussionVo == null) {
             throw new StatusNotFoundException("对不起，该讨论不存在！");
         }
 
-        if (discussion.getStatus() == 1) {
+        if (discussionVo.getStatus() == 1) {
             throw new StatusForbiddenException("对不起，该讨论已被封禁！");
         }
 
         // 浏览量+1
         UpdateWrapper<Discussion> discussionUpdateWrapper = new UpdateWrapper<>();
-        discussionUpdateWrapper.setSql("view_num=view_num+1").eq("id", discussion.getId());
+        discussionUpdateWrapper.setSql("view_num=view_num+1").eq("id", discussionVo.getId());
         discussionEntityService.update(discussionUpdateWrapper);
-        discussion.setViewNum(discussion.getViewNum() + 1);
+        discussionVo.setViewNum(discussionVo.getViewNum() + 1);
 
-        return discussion;
+        return discussionVo;
     }
 
-    public void addDiscussion(Discussion discussion) throws StatusFailException, StatusForbiddenException {
+    public void addDiscussion(Discussion discussion) throws StatusFailException, StatusForbiddenException, StatusNotFoundException {
 
         // 获取当前登录的用户
         Session session = SecurityUtils.getSubject().getSession();
         UserRolesVo userRolesVo = (UserRolesVo) session.getAttribute("userInfo");
 
-        // 除管理员外 其它用户需要AC20道题目以上才可发帖，同时限制一天只能发帖5次
-        if (!SecurityUtils.getSubject().hasRole("root")
-                && !SecurityUtils.getSubject().hasRole("admin")
-                && !SecurityUtils.getSubject().hasRole("problem_admin")) {
+        boolean isRoot = SecurityUtils.getSubject().hasRole("root");
+        boolean isProblemAdmin = SecurityUtils.getSubject().hasRole("problem_admin");
+        boolean isAdmin = SecurityUtils.getSubject().hasRole("admin");
 
+        String problemId = discussion.getPid();
+        if (problemId != null) {
+            QueryWrapper<Problem> problemQueryWrapper = new QueryWrapper<>();
+            problemQueryWrapper.eq("problemId", problemId);
+            Problem problem = problemEntityService.getOne(problemQueryWrapper);
+
+            if (problem == null) {
+                throw new StatusNotFoundException("该题目不存在");
+            } else if (problem.getIsGroup()) {
+                discussion.setGid(problem.getGid());
+            }
+        }
+
+        if (discussion.getGid() != null) {
+            if (!isRoot && !discussion.getUid().equals(userRolesVo.getUid()) && !groupValidator.isGroupMember(userRolesVo.getUid(), discussion.getGid())) {
+                throw new StatusForbiddenException("对不起，您无权限操作！");
+            }
+        }
+
+        // 除管理员外 其它用户需要AC20道题目以上才可发帖，同时限制一天只能发帖5次
+        if (!isRoot && !isProblemAdmin && !isAdmin) {
             QueryWrapper<UserAcproblem> queryWrapper = new QueryWrapper<>();
             queryWrapper.eq("uid", userRolesVo.getUid()).select("distinct pid");
             int userAcProblemCount = userAcproblemEntityService.count(queryWrapper);
 
-            if (userAcProblemCount < 20) {
-                throw new StatusForbiddenException("对不起，您暂时无权限发帖！请先去提交题目通过20道以上!");
+            if (userAcProblemCount < defaultCreateDiscussionACInitValue) {
+                throw new StatusForbiddenException("对不起，您暂时不能评论！请先去提交题目通过" + defaultCreateDiscussionACInitValue + "道以上!");
             }
 
             String lockKey = Constants.Account.DISCUSSION_ADD_NUM_LOCK.getCode() + userRolesVo.getUid();
             Integer num = (Integer) redisUtils.get(lockKey);
             if (num == null) {
                 redisUtils.set(lockKey, 1, 3600 * 24);
-            } else if (num >= 5) {
-                throw new StatusForbiddenException("对不起，您今天发帖次数已超过5次，已被限制！");
+            } else if (num >= defaultCreateDiscussionDailyLimit) {
+                throw new StatusForbiddenException("对不起，您今天发帖次数已超过" + defaultCreateDiscussionDailyLimit + "次，已被限制！");
             } else {
                 redisUtils.incr(lockKey, 1);
             }
@@ -187,17 +237,36 @@ public class DiscussionManager {
     }
 
 
-    public void updateDiscussion(Discussion discussion) throws StatusFailException {
+    public void updateDiscussion(Discussion discussion) throws StatusFailException, StatusForbiddenException {
+        Session session = SecurityUtils.getSubject().getSession();
+        UserRolesVo userRolesVo = (UserRolesVo) session.getAttribute("userInfo");
+
+        boolean isRoot = SecurityUtils.getSubject().hasRole("root");
+
+        if (!isRoot && !discussion.getUid().equals(userRolesVo.getUid())
+                && !(discussion.getGid() != null && groupValidator.isGroupAdmin(userRolesVo.getUid(), discussion.getGid()))) {
+            throw new StatusForbiddenException("对不起，您无权限操作！");
+        }
+
         boolean isOk = discussionEntityService.updateById(discussion);
         if (!isOk) {
             throw new StatusFailException("修改失败");
         }
     }
 
-    public void removeDiscussion(Integer did) throws StatusFailException {
+    public void removeDiscussion(Integer did) throws StatusFailException, StatusForbiddenException {
         // 获取当前登录的用户
         Session session = SecurityUtils.getSubject().getSession();
         UserRolesVo userRolesVo = (UserRolesVo) session.getAttribute("userInfo");
+
+        boolean isRoot = SecurityUtils.getSubject().hasRole("root");
+
+        Discussion discussion = discussionEntityService.getById(did);
+
+        if (!isRoot && !discussion.getUid().equals(userRolesVo.getUid())
+                && !(discussion.getGid() != null && groupValidator.isGroupAdmin(userRolesVo.getUid(), discussion.getGid()))) {
+            throw new StatusForbiddenException("对不起，您无权限操作！");
+        }
 
         UpdateWrapper<Discussion> discussionUpdateWrapper = new UpdateWrapper<Discussion>().eq("id", did);
         // 如果不是是管理员,则需要附加当前用户的uid条件
@@ -214,10 +283,17 @@ public class DiscussionManager {
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public void addDiscussionLike(Integer did, Boolean toLike) throws StatusFailException {
+    public void addDiscussionLike(Integer did, boolean toLike) throws StatusFailException, StatusForbiddenException {
         // 获取当前登录的用户
         Session session = SecurityUtils.getSubject().getSession();
         UserRolesVo userRolesVo = (UserRolesVo) session.getAttribute("userInfo");
+
+        boolean isRoot = SecurityUtils.getSubject().hasRole("root");
+
+        Discussion discussion = discussionEntityService.getById(did);
+        if (!isRoot && !discussion.getUid().equals(userRolesVo.getUid()) && !groupValidator.isGroupAdmin(userRolesVo.getUid(), discussion.getGid())) {
+            throw new StatusForbiddenException("对不起，您无权限操作！");
+        }
 
         QueryWrapper<DiscussionLike> discussionLikeQueryWrapper = new QueryWrapper<>();
         discussionLikeQueryWrapper.eq("did", did).eq("uid", userRolesVo.getUid());
@@ -232,12 +308,16 @@ public class DiscussionManager {
                 }
             }
             // 点赞+1
-            Discussion discussion = discussionEntityService.getById(did);
-            if (discussion != null) {
-                discussion.setLikeNum(discussion.getLikeNum() + 1);
-                discussionEntityService.updateById(discussion);
-                // 更新点赞消息
-                discussionEntityService.updatePostLikeMsg(discussion.getUid(), userRolesVo.getUid(), did);
+            UpdateWrapper<Discussion> discussionUpdateWrapper = new UpdateWrapper<>();
+            discussionUpdateWrapper.eq("id", discussion.getId())
+                    .setSql("like_num=like_num+1");
+            discussionEntityService.update(discussionUpdateWrapper);
+            // 当前帖子要不是点赞者的 才发送点赞消息
+            if (!userRolesVo.getUsername().equals(discussion.getAuthor())) {
+                discussionEntityService.updatePostLikeMsg(discussion.getUid(),
+                        userRolesVo.getUid(),
+                        did,
+                        discussion.getGid());
             }
         } else { // 取消点赞
             if (discussionLike != null) { // 如果存在就删除

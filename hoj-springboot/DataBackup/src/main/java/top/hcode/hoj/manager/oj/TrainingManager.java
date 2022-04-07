@@ -1,11 +1,15 @@
 package top.hcode.hoj.manager.oj;
 
 import cn.hutool.core.bean.BeanUtil;
+import top.hcode.hoj.dao.group.GroupMemberEntityService;
+import top.hcode.hoj.validator.GroupValidator;
+import top.hcode.hoj.validator.TrainingValidator;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.session.Session;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -54,6 +58,15 @@ public class TrainingManager {
     @Resource
     private AdminTrainingRecordManager adminTrainingRecordManager;
 
+    @Resource
+    private GroupMemberEntityService groupMemberEntityService;
+
+    @Autowired
+    private GroupValidator groupValidator;
+
+    @Resource
+    private TrainingValidator trainingValidator;
+
     /**
      * @param limit
      * @param currentPage
@@ -81,11 +94,21 @@ public class TrainingManager {
      * @Return
      * @Since 2021/11/20
      */
-    public TrainingVo getTraining(@RequestParam(value = "tid") Long tid) throws StatusFailException, StatusAccessDeniedException, StatusForbiddenException {
+    public TrainingVo getTraining(Long tid) throws StatusFailException, StatusAccessDeniedException, StatusForbiddenException {
+        Session session = SecurityUtils.getSubject().getSession();
+        UserRolesVo userRolesVo = (UserRolesVo) session.getAttribute("userInfo");
+
+        boolean isRoot = SecurityUtils.getSubject().hasRole("root");
 
         Training training = trainingEntityService.getById(tid);
         if (training == null || !training.getStatus()) {
             throw new StatusFailException("该训练不存在或不允许显示！");
+        }
+
+        if (training.getIsGroup()) {
+            if (!isRoot && !groupValidator.isGroupMember(userRolesVo.getUid(), training.getGid())) {
+                throw new StatusForbiddenException("对不起，您无权限操作！");
+            }
         }
 
         TrainingVo trainingVo = BeanUtil.copyProperties(training, TrainingVo.class);
@@ -95,10 +118,7 @@ public class TrainingManager {
         List<Long> trainingProblemIdList = trainingProblemEntityService.getTrainingProblemIdList(training.getId());
         trainingVo.setProblemCount(trainingProblemIdList.size());
 
-        // 获取当前登录的用户
-        Session session = SecurityUtils.getSubject().getSession();
-        UserRolesVo userRolesVo = (UserRolesVo) session.getAttribute("userInfo");
-        if (userRolesVo != null && checkTrainingAuth(training)) {
+        if (userRolesVo != null && trainingValidator.isInTrainingOrAdmin(training, userRolesVo)) {
             Integer userTrainingACProblemCount = trainingProblemEntityService.getUserTrainingACProblemCount(userRolesVo.getUid(), trainingProblemIdList);
             trainingVo.setAcCount(userTrainingACProblemCount);
         } else {
@@ -117,13 +137,15 @@ public class TrainingManager {
      */
     public List<ProblemVo> getTrainingProblemList(Long tid) throws StatusAccessDeniedException,
             StatusForbiddenException, StatusFailException {
+        Session session = SecurityUtils.getSubject().getSession();
+        UserRolesVo userRolesVo = (UserRolesVo) session.getAttribute("userInfo");
 
         Training training = trainingEntityService.getById(tid);
         if (training == null || !training.getStatus()) {
             throw new StatusFailException("该训练不存在或不允许显示！");
         }
 
-        checkTrainingAuth(training);
+        trainingValidator.validateTrainingAuth(training);
 
         return trainingProblemEntityService.getTrainingProblemList(tid);
 
@@ -136,7 +158,7 @@ public class TrainingManager {
      * @Return
      * @Since 2021/11/20
      */
-    public void toRegisterTraining(RegisterTrainingDto registerTrainingDto) throws StatusFailException {
+    public void toRegisterTraining(RegisterTrainingDto registerTrainingDto) throws StatusFailException, StatusForbiddenException {
 
         Long tid = registerTrainingDto.getTid();
         String password = registerTrainingDto.getPassword();
@@ -144,10 +166,6 @@ public class TrainingManager {
         if (tid == null || StringUtils.isEmpty(password)) {
             throw new StatusFailException("请求参数不能为空！");
         }
-
-        // 获取当前登录的用户
-        Session session = SecurityUtils.getSubject().getSession();
-        UserRolesVo userRolesVo = (UserRolesVo) session.getAttribute("userInfo");
 
         Training training = trainingEntityService.getById(tid);
 
@@ -158,6 +176,10 @@ public class TrainingManager {
         if (!training.getPrivatePwd().equals(password)) { // 密码不对
             throw new StatusFailException("训练密码错误，请重新输入！");
         }
+
+        // 获取当前登录的用户
+        Session session = SecurityUtils.getSubject().getSession();
+        UserRolesVo userRolesVo = (UserRolesVo) session.getAttribute("userInfo");
 
         QueryWrapper<TrainingRegister> registerQueryWrapper = new QueryWrapper<>();
         registerQueryWrapper.eq("tid", tid).eq("uid", userRolesVo.getUid());
@@ -226,60 +248,25 @@ public class TrainingManager {
             throw new StatusFailException("该训练不存在或不允许显示！");
         }
 
-        checkTrainingAuth(training);
+        trainingValidator.validateTrainingAuth(training);
 
         // 页数，每页数若为空，设置默认值
         if (currentPage == null || currentPage < 1) currentPage = 1;
         if (limit == null || limit < 1) limit = 30;
 
-        return getTrainingRank(tid, training.getAuthor(), currentPage, limit);
+        return getTrainingRank(tid, training.getIsGroup() ? training.getGid() : null, training.getAuthor(), currentPage, limit);
     }
 
-
-    public boolean checkTrainingAuth(Training training) throws StatusAccessDeniedException, StatusForbiddenException {
-        Session session = SecurityUtils.getSubject().getSession();
-        UserRolesVo userRolesVo = (UserRolesVo) session.getAttribute("userInfo");
-        return checkTrainingAuth(training, userRolesVo);
-    }
-
-
-    public boolean checkTrainingAuth(Training training, UserRolesVo userRolesVo) throws StatusAccessDeniedException, StatusForbiddenException {
-        if (Constants.Training.AUTH_PRIVATE.getValue().equals(training.getAuth())) {
-            if (userRolesVo == null) {
-                throw new StatusAccessDeniedException("该训练属于私有题单，请先登录以校验权限！");
-            }
-            boolean root = SecurityUtils.getSubject().hasRole("root"); // 是否为超级管理员
-            boolean isAuthor = training.getAuthor().equals(userRolesVo.getUsername()); // 是否为该私有训练的创建者
-
-            if (!root && !isAuthor) { // 如果两者都不是，需要做注册权限校验
-                checkTrainingRegister(training.getId(), userRolesVo.getUid());
-            }
-        }
-        return true;
-    }
-
-    private void checkTrainingRegister(Long tid, String uid) throws StatusAccessDeniedException, StatusForbiddenException {
-        QueryWrapper<TrainingRegister> trainingRegisterQueryWrapper = new QueryWrapper<>();
-        trainingRegisterQueryWrapper.eq("tid", tid);
-        trainingRegisterQueryWrapper.eq("uid", uid);
-        TrainingRegister trainingRegister = trainingRegisterEntityService.getOne(trainingRegisterQueryWrapper, false);
-
-        if (trainingRegister == null) {
-            throw new StatusAccessDeniedException("该训练属于私有，请先使用专属密码注册！");
-        }
-
-        if (!trainingRegister.getStatus()) {
-            throw new StatusForbiddenException("错误：你已被禁止参加该训练！");
-        }
-    }
-
-
-    private IPage<TrainingRankVo> getTrainingRank(Long tid, String username, int currentPage, int limit) {
+    private IPage<TrainingRankVo> getTrainingRank(Long tid, Long gid, String username, int currentPage, int limit) {
 
         Map<Long, String> tpIdMapDisplayId = getTPIdMapDisplayId(tid);
         List<TrainingRecordVo> trainingRecordVoList = trainingRecordEntityService.getTrainingRecord(tid);
 
         List<String> superAdminUidList = userInfoEntityService.getSuperAdminUidList();
+        if (gid != null) {
+            List<String> groupRootUidList = groupMemberEntityService.getGroupRootUidList(gid);
+            superAdminUidList.addAll(groupRootUidList);
+        }
 
 
         List<TrainingRankVo> result = new ArrayList<>();
@@ -375,7 +362,7 @@ public class TrainingManager {
     }
 
     /**
-     *  未启用，该操作会导致公开训练也记录，但其实并不需求，会造成数据量无效增加
+     * 未启用，该操作会导致公开训练也记录，但其实并不需要，会造成数据量无效增加
      */
     @Async
     public void checkAndSyncTrainingRecord(Long pid, Long submitId, String uid) {

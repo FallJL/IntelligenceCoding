@@ -2,6 +2,9 @@ package top.hcode.hoj.validator;
 
 import cn.hutool.core.util.ReUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.session.Session;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import top.hcode.hoj.common.exception.StatusFailException;
@@ -26,9 +29,14 @@ public class ContestValidator {
     @Resource
     private ContestRegisterEntityService contestRegisterEntityService;
 
+    @Autowired
+    private GroupValidator groupValidator;
+
     public boolean isSealRank(String uid, Contest contest, Boolean forceRefresh, Boolean isRoot) {
         // 如果是管理员同时选择强制刷新榜单，则封榜无效
-        if (forceRefresh && (isRoot || contest.getUid().equals(uid))) {
+        Long gid = contest.getGid();
+        boolean isContestAdmin = isRoot || contest.getUid().equals(uid);
+        if (forceRefresh && (isContestAdmin || (contest.getIsGroup() && groupValidator.isGroupRoot(uid, gid)))) {
             return false;
         } else if (contest.getSealRank() && contest.getSealRankTime() != null) { // 该比赛开启封榜模式
             Date now = new Date();
@@ -57,30 +65,40 @@ public class ContestValidator {
             throw new StatusFailException("对不起，该比赛不存在！");
         }
 
-        if (!isRoot && !contest.getUid().equals(userRolesVo.getUid())) { // 若不是比赛管理者
+        boolean isContestAdmin = isRoot || contest.getUid().equals(userRolesVo.getUid());
+        Long gid = contest.getGid();
+        // 若是比赛管理者
+        if (isContestAdmin || (contest.getIsGroup() && groupValidator.isGroupRoot(userRolesVo.getUid(), gid))) {
+            return;
+        }
 
-            // 判断一下比赛的状态，还未开始不能查看题目。
-            if (contest.getStatus().intValue() != Constants.Contest.STATUS_RUNNING.getCode() &&
-                    contest.getStatus().intValue() != Constants.Contest.STATUS_ENDED.getCode()) {
-                throw new StatusForbiddenException("比赛还未开始，您无权访问该比赛！");
-            } else { // 如果是处于比赛正在进行阶段，需要判断该场比赛是否为私有赛，私有赛需要判断该用户是否已注册
-                if (contest.getAuth().intValue() == Constants.Contest.AUTH_PRIVATE.getCode()) {
-                    QueryWrapper<ContestRegister> registerQueryWrapper = new QueryWrapper<>();
-                    registerQueryWrapper.eq("cid", contest.getId()).eq("uid", userRolesVo.getUid());
-                    ContestRegister register = contestRegisterEntityService.getOne(registerQueryWrapper);
-                    if (register == null) { // 如果数据为空，表示未注册私有赛，不可访问
-                        throw new StatusForbiddenException("对不起，请先到比赛首页输入比赛密码进行注册！");
-                    }
+        // 判断一下比赛的状态，还未开始不能查看题目。
+        if (contest.getStatus().intValue() != Constants.Contest.STATUS_RUNNING.getCode() &&
+                contest.getStatus().intValue() != Constants.Contest.STATUS_ENDED.getCode()) {
+            throw new StatusForbiddenException("比赛还未开始，您无权访问该比赛！");
+        } else {
 
-                    if (contest.getOpenAccountLimit()
-                            && !validateAccountRule(contest.getAccountLimitRule(), userRolesVo.getUsername())) {
-                        throw new StatusForbiddenException("对不起！本次比赛只允许特定账号规则的用户参赛！");
-                    }
+            if (contest.getIsGroup() && !groupValidator.isGroupMember(userRolesVo.getUid(), gid)) {
+                throw new StatusForbiddenException("对不起，您并非团队内的成员无法参加该团队内的比赛！");
+            }
+
+            // 如果是处于比赛正在进行阶段，需要判断该场比赛是否为私有赛，私有赛需要判断该用户是否已注册
+            if (contest.getAuth().intValue() == Constants.Contest.AUTH_PRIVATE.getCode()) {
+                QueryWrapper<ContestRegister> registerQueryWrapper = new QueryWrapper<>();
+                registerQueryWrapper.eq("cid", contest.getId()).eq("uid", userRolesVo.getUid());
+                ContestRegister register = contestRegisterEntityService.getOne(registerQueryWrapper);
+                if (register == null) { // 如果数据为空，表示未注册私有赛，不可访问
+                    throw new StatusForbiddenException("对不起，请先到比赛首页输入比赛密码进行注册！");
+                }
+
+                if (contest.getOpenAccountLimit()
+                        && !validateAccountRule(contest.getAccountLimitRule(), userRolesVo.getUsername())) {
+                    throw new StatusForbiddenException("对不起！本次比赛只允许特定账号规则的用户参赛！");
                 }
             }
         }
-    }
 
+    }
 
 
     public void validateJudgeAuth(Contest contest, String uid) throws StatusForbiddenException {

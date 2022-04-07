@@ -7,8 +7,15 @@ import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.ZipUtil;
 import cn.hutool.json.JSONUtil;
+import top.hcode.hoj.common.exception.StatusForbiddenException;
+import top.hcode.hoj.dao.problem.ProblemEntityService;
+import top.hcode.hoj.pojo.entity.problem.Problem;
+import top.hcode.hoj.pojo.vo.UserRolesVo;
+import top.hcode.hoj.validator.GroupValidator;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.session.Session;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
@@ -41,7 +48,25 @@ public class TestCaseManager {
     @Autowired
     private ProblemCaseEntityService problemCaseEntityService;
 
-    public Map<Object,Object> uploadTestcaseZip(MultipartFile file) throws StatusFailException, StatusSystemErrorException {
+    @Autowired
+    private ProblemEntityService problemEntityService;
+
+    @Autowired
+    private GroupValidator groupValidator;
+
+    public Map<Object, Object> uploadTestcaseZip(MultipartFile file, Long gid) throws StatusFailException, StatusSystemErrorException, StatusForbiddenException {
+        Session session = SecurityUtils.getSubject().getSession();
+        UserRolesVo userRolesVo = (UserRolesVo) session.getAttribute("userInfo");
+
+        boolean isRoot = SecurityUtils.getSubject().hasRole("root");
+        boolean isProblemAdmin = SecurityUtils.getSubject().hasRole("problem_admin");
+        boolean isAdmin = SecurityUtils.getSubject().hasRole("admin");
+
+        if (!isRoot && !isProblemAdmin && !isAdmin
+                && !(gid != null && groupValidator.isGroupMember(userRolesVo.getUid(), gid))) {
+            throw new StatusForbiddenException("对不起，您无权限操作！");
+        }
+
         //获取文件后缀
         String suffix = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf(".") + 1);
         if (!"zip".toUpperCase().contains(suffix.toUpperCase())) {
@@ -103,18 +128,18 @@ public class TestCaseManager {
             String inputFileName = inputData.get(key);
             testcaseMap.put("input", inputFileName);
 
-            String outputFileName = key + ".out";
-            if (inputFileName.endsWith(".txt")) {
-                outputFileName = inputFileName.replaceAll("input", "output");
-            }
-
             // 若有名字对应的out文件不存在的，直接生成对应的out文件
-            if (outputData.getOrDefault(key, null) == null) {
-                FileWriter fileWriter = new FileWriter(fileDir + File.separator + outputFileName);
+            String oriOutputFileName = outputData.getOrDefault(key, null);
+            if (oriOutputFileName == null) {
+                oriOutputFileName = key + ".out";
+                if (inputFileName.endsWith(".txt")) {
+                    oriOutputFileName = inputFileName.replaceAll("input", "output");
+                }
+                FileWriter fileWriter = new FileWriter(fileDir + File.separator + oriOutputFileName);
                 fileWriter.write("");
             }
 
-            testcaseMap.put("output", outputFileName);
+            testcaseMap.put("output", oriOutputFileName);
             problemCaseList.add(testcaseMap);
         }
 
@@ -132,13 +157,33 @@ public class TestCaseManager {
                 .collect(Collectors.toList());
 
         return MapUtil.builder()
-                        .put("fileList", fileList)
-                        .put("fileListDir", fileDir)
-                        .map();
+                .put("fileList", fileList)
+                .put("fileListDir", fileDir)
+                .map();
     }
 
 
-    public void downloadTestcase(Long pid, HttpServletResponse response) throws StatusFailException {
+    public void downloadTestcase(Long pid, HttpServletResponse response) throws StatusFailException, StatusForbiddenException {
+        Session session = SecurityUtils.getSubject().getSession();
+        UserRolesVo userRolesVo = (UserRolesVo) session.getAttribute("userInfo");
+
+        boolean isRoot = SecurityUtils.getSubject().hasRole("root");
+        boolean isProblemAdmin = SecurityUtils.getSubject().hasRole("problem_admin");
+
+        Problem problem = problemEntityService.getById(pid);
+
+        Long gid = problem.getGid();
+
+        if (gid != null) {
+            if (!isRoot && !problem.getAuthor().equals(userRolesVo.getUsername())
+                    && !groupValidator.isGroupMember(userRolesVo.getUid(), gid)) {
+                throw new StatusForbiddenException("对不起，您无权限操作！");
+            }
+        } else {
+            if (!isRoot && !isProblemAdmin && !problem.getAuthor().equals(userRolesVo.getUsername())) {
+                throw new StatusForbiddenException("对不起，您无权限操作！");
+            }
+        }
 
         String workDir = Constants.File.TESTCASE_BASE_FOLDER.getPath() + File.separator + "problem_" + pid;
         File file = new File(workDir);
@@ -147,7 +192,7 @@ public class TestCaseManager {
             problemCaseQueryWrapper.eq("pid", pid);
             List<ProblemCase> problemCaseList = problemCaseEntityService.list(problemCaseQueryWrapper);
 
-            if (CollectionUtils.isEmpty(problemCaseList)){
+            if (CollectionUtils.isEmpty(problemCaseList)) {
                 throw new StatusFailException("对不起，该题目的评测数据为空！");
             }
 
@@ -156,7 +201,7 @@ public class TestCaseManager {
                     problemCaseList.get(0).getOutput().endsWith(".ans"))) {
                 hasTestCase = false;
             }
-            if (!hasTestCase){
+            if (!hasTestCase) {
                 throw new StatusFailException("对不起，该题目的评测数据为空！");
             }
 

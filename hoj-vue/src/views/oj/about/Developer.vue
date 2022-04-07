@@ -88,7 +88,7 @@ paper-card[type='server'] {
   margin-bottom: 2rem;
 }
 paper-card:hover {
-  box-shadow: rgb(0,0,0) 0px 0px 40px;
+  box-shadow: rgb(0 0 0 / 15%) 0px 0px 40px;
 }
 .teal-text {
   color: #009688 !important;

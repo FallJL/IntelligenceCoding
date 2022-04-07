@@ -117,13 +117,13 @@
             <template v-slot="{ row }">
               <span
                 v-if="contestID"
-                @click="getProblemUri(row.displayId, true)"
+                @click="getProblemUri(row.displayId)"
                 style="color: rgb(87, 163, 243)"
                 >{{ row.displayId + ' ' + row.title }}
               </span>
               <span
                 v-else
-                @click="getProblemUri(row.displayPid, false)"
+                @click="getProblemUri(row.displayPid)"
                 style="color: rgb(87, 163, 243)"
                 >{{ row.displayPid + ' ' + row.title }}
               </span>
@@ -362,7 +362,8 @@ export default {
       total: 30,
       limit: 15,
       currentPage: 1,
-      contestID: '',
+      contestID: null,
+      groupID: null,
       routeName: '',
       checkStatusNum: 0,
       JUDGE_STATUS: '',
@@ -394,6 +395,7 @@ export default {
     init() {
       this.checkStatusNum = 0;
       this.contestID = this.$route.params.contestID;
+      this.groupID = this.$route.params.groupID;
       let query = this.$route.query;
       this.formFilter.problemID = query.problemID;
       this.formFilter.username = query.username || '';
@@ -467,6 +469,7 @@ export default {
     getSubmissions() {
       let params = this.buildQuery();
       params.contestID = this.contestID;
+      params.gid = this.groupID;
       if (this.contestID) {
         if (this.contestStatus == CONTEST_STATUS.SCHEDULED) {
           params.beforeContestSubmit = true;
@@ -618,6 +621,8 @@ export default {
         // 避免重复同个路径请求导致报错
         let routeName = queryParams.contestID
           ? 'ContestSubmissionList'
+          : this.groupID
+          ? 'GroupSubmissionList'
           : 'SubmissionList';
         this.$router.push({
           name: routeName,
@@ -700,15 +705,20 @@ export default {
     ...mapActions(['changeModalStatus']),
 
     showSubmitDetail(row) {
-      if (row.cid != 0) {
+      if (this.contestID != null) {
         // 比赛提交详情
         this.$router.push({
           name: 'ContestSubmissionDeatil',
           params: {
-            contestID: this.$route.params.contestID,
+            contestID: this.contestID,
             problemID: row.displayId,
             submitID: row.submitId,
           },
+        });
+      } else if (this.groupID != null) {
+        this.$router.push({
+          name: 'GroupSubmissionDeatil',
+          params: { submitID: row.submitId },
         });
       } else {
         this.$router.push({
@@ -717,13 +727,21 @@ export default {
         });
       }
     },
-    getProblemUri(pid, isContest) {
-      if (isContest) {
+    getProblemUri(pid) {
+      if (this.contestID) {
         this.$router.push({
           name: 'ContestProblemDetails',
           params: {
             contestID: this.$route.params.contestID,
             problemID: pid,
+          },
+        });
+      } else if (this.groupID) {
+        this.$router.push({
+          name: 'GroupProblemDetails',
+          params: {
+            problemID: pid,
+            groupID: this.groupID,
           },
         });
       } else {

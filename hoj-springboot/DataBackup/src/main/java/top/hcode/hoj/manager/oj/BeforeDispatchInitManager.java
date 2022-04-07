@@ -2,8 +2,12 @@ package top.hcode.hoj.manager.oj;
 
 import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.date.DateUtil;
+import top.hcode.hoj.validator.GroupValidator;
+import top.hcode.hoj.validator.TrainingValidator;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.session.Session;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import top.hcode.hoj.common.exception.StatusAccessDeniedException;
@@ -65,13 +69,17 @@ public class BeforeDispatchInitManager {
     private TrainingRecordEntityService trainingRecordEntityService;
 
     @Resource
-    private TrainingManager trainingManager;
+    private TrainingValidator trainingValidator;
 
     @Resource
     private ContestValidator contestValidator;
 
+    @Autowired
+    private GroupValidator groupValidator;
 
-    public void initCommonSubmission(String problemId,  Judge judge) throws StatusForbiddenException {
+    public void initCommonSubmission(String problemId, Judge judge) throws StatusForbiddenException {
+        Session session = SecurityUtils.getSubject().getSession();
+        UserRolesVo userRolesVo = (UserRolesVo) session.getAttribute("userInfo");
 
         QueryWrapper<Problem> problemQueryWrapper = new QueryWrapper<>();
         problemQueryWrapper.eq("problem_id", problemId);
@@ -81,7 +89,18 @@ public class BeforeDispatchInitManager {
             throw new StatusForbiddenException("错误！当前题目不可提交！");
         }
 
-        judge.setCpid(0L).setPid(problem.getId()).setDisplayPid(problem.getProblemId());
+        boolean isRoot = SecurityUtils.getSubject().hasRole("root");
+
+        if (problem.getIsGroup()) {
+            if (!isRoot && !groupValidator.isGroupMember(userRolesVo.getUid(), problem.getGid())) {
+                throw new StatusForbiddenException("对不起，您并非该题目所属的团队内成员，无权进行提交！");
+            }
+        }
+
+        judge.setCpid(0L)
+                .setPid(problem.getId())
+                .setGid(problem.getGid())
+                .setDisplayPid(problem.getProblemId());
 
         // 将新提交数据插入数据库
         judgeEntityService.save(judge);
@@ -102,8 +121,8 @@ public class BeforeDispatchInitManager {
         }
 
         // 是否为超级管理员或者该比赛的创建者，则为比赛管理者
-        boolean root = SecurityUtils.getSubject().hasRole("root");
-        if (!root && !contest.getUid().equals(userRolesVo.getUid())) {
+        boolean isRoot = SecurityUtils.getSubject().hasRole("root");
+        if (!isRoot && !contest.getUid().equals(userRolesVo.getUid())) {
             if (contest.getStatus().intValue() == Constants.Contest.STATUS_SCHEDULED.getCode()) {
                 throw new StatusForbiddenException("比赛未开始，不可提交！");
             }
@@ -123,12 +142,20 @@ public class BeforeDispatchInitManager {
         contestProblemQueryWrapper.eq("cid", cid).eq("display_id", displayId);
         ContestProblem contestProblem = contestProblemEntityService.getOne(contestProblemQueryWrapper, false);
         judge.setCpid(contestProblem.getId())
-                .setPid(contestProblem.getPid());
+                .setPid(contestProblem.getPid())
+                .setGid(contest.getGid());
 
         Problem problem = problemEntityService.getById(contestProblem.getPid());
         if (problem.getAuth() == 2) {
             throw new StatusForbiddenException("错误！当前题目不可提交！");
         }
+
+        if (problem.getIsGroup()) {
+            if (!isRoot && !groupValidator.isGroupMember(userRolesVo.getUid(), problem.getGid())) {
+                throw new StatusForbiddenException("对不起，您并非该题目所属团队内的成员，无权提交！");
+            }
+        }
+
         judge.setDisplayPid(problem.getProblemId());
 
         // 将新提交数据插入数据库
@@ -156,7 +183,6 @@ public class BeforeDispatchInitManager {
     }
 
 
-
     @Transactional(rollbackFor = Exception.class)
     public void initTrainingSubmission(Long tid, String displayId, UserRolesVo userRolesVo, Judge judge) throws StatusForbiddenException, StatusFailException, StatusAccessDeniedException {
 
@@ -165,7 +191,7 @@ public class BeforeDispatchInitManager {
             throw new StatusFailException("该训练不存在或不允许显示！");
         }
 
-        trainingManager.checkTrainingAuth(training, userRolesVo);
+        trainingValidator.validateTrainingAuth(training, userRolesVo);
 
         // 查询获取对应的pid和cpid
         QueryWrapper<TrainingProblem> trainingProblemQueryWrapper = new QueryWrapper<>();
@@ -178,7 +204,9 @@ public class BeforeDispatchInitManager {
         if (problem.getAuth() == 2) {
             throw new StatusForbiddenException("错误！当前题目不可提交！");
         }
-        judge.setDisplayPid(problem.getProblemId());
+
+        judge.setDisplayPid(problem.getProblemId())
+                .setGid(training.getGid());
 
         // 将新提交数据插入数据库
         judgeEntityService.save(judge);
