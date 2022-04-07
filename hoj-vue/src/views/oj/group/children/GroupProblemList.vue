@@ -52,7 +52,7 @@
           <template v-slot="{ row }">
             <template v-if="isGetStatusOk">
               <el-tooltip
-                :content="JUDGE_STATUS[row.myStatus]['name']"
+                :content="JUDGE_STATUS[row['myStatus']]['name']"
                 placement="top"
               >
                 <template v-if="row.myStatus == 0">
@@ -256,6 +256,7 @@ export default {
                 for (let index = 0; index < this.problemList.length; index++) {
                   pidList.push(this.problemList[index].pid);
                 }
+                this.isGetStatusOk = false;
                 api
                   .getUserProblemStatus(
                     pidList,
