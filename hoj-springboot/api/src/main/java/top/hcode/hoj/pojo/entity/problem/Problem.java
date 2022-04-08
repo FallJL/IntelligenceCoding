@@ -119,6 +119,12 @@ public class Problem implements Serializable {
     @ApiModelProperty(value = "修改题目的管理员用户名")
     private String modifiedUser;
 
+    @ApiModelProperty(value = "是否为团队内的题目")
+    private Boolean isGroup;
+
+    @ApiModelProperty(value = "团队ID")
+    private Long gid;
+
     @TableField(fill = FieldFill.INSERT)
     private Date gmtCreate;
 

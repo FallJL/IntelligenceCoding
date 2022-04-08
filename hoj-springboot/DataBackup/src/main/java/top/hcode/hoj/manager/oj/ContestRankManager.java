@@ -23,7 +23,6 @@ public class ContestRankManager {
     @Resource
     private ContestCalculateRankManager contestCalculateRankManager;
 
-
     /**
      * @param isOpenSealRank
      * @param removeStar
@@ -40,7 +39,8 @@ public class ContestRankManager {
                                                          List<String> concernedList,
                                                          Contest contest,
                                                          int currentPage,
-                                                         int limit) {
+                                                         int limit){
+
         // 进行排序计算
         List<ACMContestRankVo> orderResultList = contestCalculateRankManager.calcACMRank(isOpenSealRank,
                 removeStar,

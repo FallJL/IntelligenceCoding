@@ -1,5 +1,7 @@
 package top.hcode.hoj.manager.oj;
 
+
+import top.hcode.hoj.validator.GroupValidator;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -37,6 +39,8 @@ public class ContestAdminManager {
     @Autowired
     private ContestPrintEntityService contestPrintEntityService;
 
+    @Autowired
+    private GroupValidator groupValidator;
 
     public IPage<ContestRecord> getContestACInfo(Long cid, Integer currentPage, Integer limit) throws StatusForbiddenException {
 
@@ -49,8 +53,10 @@ public class ContestAdminManager {
         // 超级管理员或者该比赛的创建者，则为比赛管理者
         boolean isRoot = SecurityUtils.getSubject().hasRole("root");
 
-        if (!isRoot && !contest.getUid().equals(userRolesVo.getUid())) {
-            throw new StatusForbiddenException("对不起，你无权查看！");
+        if (!isRoot
+                && !contest.getUid().equals(userRolesVo.getUid())
+                && !(contest.getIsGroup() && groupValidator.isGroupRoot(userRolesVo.getUid(), contest.getGid()))) {
+            throw new StatusForbiddenException("对不起，您无权限操作！");
         }
 
         if (currentPage == null || currentPage < 1) currentPage = 1;
@@ -77,8 +83,10 @@ public class ContestAdminManager {
         // 超级管理员或者该比赛的创建者，则为比赛管理者
         boolean isRoot = SecurityUtils.getSubject().hasRole("root");
 
-        if (!isRoot && !contest.getUid().equals(userRolesVo.getUid())) {
-            throw new StatusForbiddenException("对不起，你无权操作！");
+        if (!isRoot
+                && !contest.getUid().equals(userRolesVo.getUid())
+                && !(contest.getIsGroup() && groupValidator.isGroupRoot(userRolesVo.getUid(), contest.getGid()))) {
+            throw new StatusForbiddenException("对不起，您无权限操作！");
         }
 
         boolean isOk = contestRecordEntityService.updateById(
@@ -90,7 +98,6 @@ public class ContestAdminManager {
 
     }
 
-
     public IPage<ContestPrint> getContestPrint(Long cid, Integer currentPage, Integer limit) throws StatusForbiddenException {
 
         Session session = SecurityUtils.getSubject().getSession();
@@ -101,8 +108,9 @@ public class ContestAdminManager {
         // 超级管理员或者该比赛的创建者，则为比赛管理者
         boolean isRoot = SecurityUtils.getSubject().hasRole("root");
 
-        if (!isRoot && !contest.getUid().equals(userRolesVo.getUid())) {
-            throw new StatusForbiddenException("对不起，你无权查看！");
+        Long gid = contest.getGid();
+        if (!groupValidator.isGroupRoot(userRolesVo.getUid(), gid) && !isRoot && !contest.getUid().equals(userRolesVo.getUid())) {
+            throw new StatusForbiddenException("对不起，您无权限操作！");
         }
 
         if (currentPage == null || currentPage < 1) currentPage = 1;
@@ -132,8 +140,9 @@ public class ContestAdminManager {
         // 超级管理员或者该比赛的创建者，则为比赛管理者
         boolean isRoot = SecurityUtils.getSubject().hasRole("root");
 
-        if (!isRoot && !contest.getUid().equals(userRolesVo.getUid())) {
-            throw new StatusForbiddenException("对不起，你无权操作！");
+        if (!isRoot && !contest.getUid().equals(userRolesVo.getUid())
+                && !(contest.getIsGroup() && groupValidator.isGroupRoot(userRolesVo.getUid(), contest.getGid()))) {
+            throw new StatusForbiddenException("对不起，您无权限操作！");
         }
 
         boolean isOk = contestPrintEntityService.updateById(new ContestPrint().setId(id).setStatus(1));

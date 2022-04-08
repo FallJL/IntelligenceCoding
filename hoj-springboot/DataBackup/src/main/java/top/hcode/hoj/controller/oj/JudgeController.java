@@ -14,6 +14,7 @@ import top.hcode.hoj.pojo.entity.judge.JudgeCase;
 import top.hcode.hoj.pojo.vo.JudgeVo;
 import top.hcode.hoj.pojo.vo.SubmissionInfoVo;
 import top.hcode.hoj.service.oj.JudgeService;
+
 import java.util.*;
 
 /**
@@ -35,6 +36,44 @@ public class JudgeController {
      * @Return CommonResult
      * @Since 2020/10/30
      */
+
+    /**
+     * @param limit
+     * @param currentPage
+     * @param onlyMine
+     * @param searchPid
+     * @param searchStatus
+     * @param searchUsername
+     * @param completeProblemID
+     * @MethodName getJudgeList
+     * @Description 通用查询判题记录列表
+     * @Return CommonResult
+     * @Since 2020/10/29
+     */
+    @GetMapping("/get-submission-list")
+    public CommonResult<IPage<JudgeVo>> getJudgeList(@RequestParam(value = "limit", required = false) Integer limit,
+                                                     @RequestParam(value = "currentPage", required = false) Integer currentPage,
+                                                     @RequestParam(value = "onlyMine", required = false) Boolean onlyMine,
+                                                     @RequestParam(value = "problemID", required = false) String searchPid,
+                                                     @RequestParam(value = "status", required = false) Integer searchStatus,
+                                                     @RequestParam(value = "username", required = false) String searchUsername,
+                                                     @RequestParam(value = "completeProblemID", defaultValue = "false") Boolean completeProblemID,
+                                                     @RequestParam(value = "gid", required = false) Long gid) {
+
+        return judgeService.getJudgeList(limit, currentPage, onlyMine, searchPid, searchStatus, searchUsername, completeProblemID, gid);
+    }
+
+    /**
+     * @MethodName getSubmission
+     * @Description 获取单个提交记录的详情
+     * @Return CommonResult
+     * @Since 2021/1/2
+     */
+    @GetMapping("/get-submission-detail")
+    public CommonResult<SubmissionInfoVo> getSubmission(@RequestParam(value = "submitId", required = true) Long submitId) {
+        return judgeService.getSubmission(submitId);
+    }
+
     @RequiresAuthentication
     @RequiresPermissions("submit")
     @RequestMapping(value = "/submit-problem-judge", method = RequestMethod.POST)
@@ -55,19 +94,6 @@ public class JudgeController {
         return judgeService.resubmit(submitId);
     }
 
-
-    /**
-     * @MethodName getSubmission
-     * @Description 获取单个提交记录的详情
-     * @Return CommonResult
-     * @Since 2021/1/2
-     */
-    @GetMapping("/submission")
-    public CommonResult<SubmissionInfoVo> getSubmission(@RequestParam(value = "submitId", required = true) Long submitId) {
-        return judgeService.getSubmission(submitId);
-    }
-
-
     /**
      * @MethodName updateSubmission
      * @Description 修改单个提交详情的分享权限
@@ -81,32 +107,6 @@ public class JudgeController {
     }
 
     /**
-     * @param limit
-     * @param currentPage
-     * @param onlyMine
-     * @param searchPid
-     * @param searchStatus
-     * @param searchUsername
-     * @param completeProblemID
-     * @MethodName getJudgeList
-     * @Description 通用查询判题记录列表
-     * @Return CommonResult
-     * @Since 2020/10/29
-     */
-    @RequestMapping(value = "/submissions", method = RequestMethod.GET)
-    public CommonResult<IPage<JudgeVo>> getJudgeList(@RequestParam(value = "limit", required = false) Integer limit,
-                                                     @RequestParam(value = "currentPage", required = false) Integer currentPage,
-                                                     @RequestParam(value = "onlyMine", required = false) Boolean onlyMine,
-                                                     @RequestParam(value = "problemID", required = false) String searchPid,
-                                                     @RequestParam(value = "status", required = false) Integer searchStatus,
-                                                     @RequestParam(value = "username", required = false) String searchUsername,
-                                                     @RequestParam(value = "completeProblemID", defaultValue = "false") Boolean completeProblemID) {
-
-        return judgeService.getJudgeList(limit, currentPage, onlyMine, searchPid, searchStatus, searchUsername, completeProblemID);
-    }
-
-
-    /**
      * @MethodName checkJudgeResult
      * @Description 对提交列表状态为Pending和Judging的提交进行更新检查
      * @Return
@@ -118,8 +118,8 @@ public class JudgeController {
     }
 
     /**
-     * @MethodName checkContestJudgeResult
      * @param submitIdListDto
+     * @MethodName checkContestJudgeResult
      * @Description 需要检查是否为封榜，是否可以查询结果，避免有人恶意查询
      * @Return
      * @Since 2021/6/11
@@ -132,8 +132,8 @@ public class JudgeController {
 
 
     /**
-     * @MethodName getJudgeCase
      * @param submitId
+     * @MethodName getJudgeCase
      * @Description 获得指定提交id的测试样例结果，暂不支持查看测试数据，只可看测试点结果，时间，空间，或者IO得分
      * @Return
      * @Since 2020/10/29

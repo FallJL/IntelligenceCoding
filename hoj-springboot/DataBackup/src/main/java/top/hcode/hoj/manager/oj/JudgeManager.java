@@ -1,5 +1,7 @@
 package top.hcode.hoj.manager.oj;
 
+import org.springframework.beans.factory.annotation.Value;
+import top.hcode.hoj.validator.GroupValidator;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -87,6 +89,12 @@ public class JudgeManager {
     @Autowired
     private BeforeDispatchInitManager beforeDispatchInitManager;
 
+    @Autowired
+    private GroupValidator groupValidator;
+
+    @Value("${hoj.web-config.default-user-limit.submit.interval}")
+    private Integer defaultSubmitInterval;
+
     /**
      * @MethodName submitProblemJudge
      * @Description 核心方法 判题通过openfeign调用判题系统服务
@@ -111,7 +119,7 @@ public class JudgeManager {
             if (count > 1) {
                 throw new StatusForbiddenException("对不起，您的提交频率过快，请稍后再尝试！");
             }
-            redisUtils.expire(lockKey, 8);
+            redisUtils.expire(lockKey, defaultSubmitInterval);
         }
 
         HttpServletRequest request = ((ServletRequestAttributes) (RequestContextHolder.currentRequestAttributes())).getRequest();
@@ -233,9 +241,7 @@ public class JudgeManager {
         Session session = SecurityUtils.getSubject().getSession();
         UserRolesVo userRolesVo = (UserRolesVo) session.getAttribute("userInfo");
 
-
         boolean isRoot = SecurityUtils.getSubject().hasRole("root"); // 是否为超级管理员
-
 
         // 清空vj信息
         judge.setVjudgeUsername(null);
@@ -254,7 +260,8 @@ public class JudgeManager {
                 throw new StatusAccessDeniedException("请先登录！");
             }
             Contest contest = contestEntityService.getById(judge.getCid());
-            if (!isRoot && !userRolesVo.getUid().equals(contest.getUid())) {
+            if (!isRoot && !userRolesVo.getUid().equals(contest.getUid())
+                    && !(judge.getGid() != null && groupValidator.isGroupRoot(userRolesVo.getUid(), judge.getGid()))) {
                 // 如果是比赛,那么还需要判断是否为封榜,比赛管理员和超级管理员可以有权限查看(ACM题目除外)
                 if (contest.getType().intValue() == Constants.Contest.TYPE_OI.getCode()
                         && contestValidator.isSealRank(userRolesVo.getUid(), contest, true, false)) {
@@ -274,8 +281,9 @@ public class JudgeManager {
                 }
             }
         } else {
-            boolean admin = SecurityUtils.getSubject().hasRole("problem_admin");// 是否为题目管理员
-            if (!judge.getShare() && !isRoot && !admin) {
+            boolean isProblemAdmin = SecurityUtils.getSubject().hasRole("problem_admin");// 是否为题目管理员
+            if (!judge.getShare() && !isRoot && !isProblemAdmin
+                    && !(judge.getGid() != null && groupValidator.isGroupRoot(userRolesVo.getUid(), judge.getGid()))) {
                 if (userRolesVo != null) { // 当前是登陆状态
                     // 需要判断是否为当前登陆用户自己的提交代码
                     if (!judge.getUid().equals(userRolesVo.getUid())) {
@@ -302,7 +310,6 @@ public class JudgeManager {
 
     }
 
-
     /**
      * @MethodName updateSubmission
      * @Description 修改单个提交详情的分享权限
@@ -317,6 +324,7 @@ public class JudgeManager {
         if (!userRolesVo.getUid().equals(judge.getUid())) { // 判断该提交是否为当前用户的
             throw new StatusForbiddenException("对不起，您不能修改他人的代码分享权限！");
         }
+
         Judge judgeInfo = judgeEntityService.getById(judge.getSubmitId());
         if (judgeInfo.getCid() != 0) { // 如果是比赛提交，不可分享！
             throw new StatusForbiddenException("对不起，您不能分享比赛题目的提交代码！");
@@ -339,7 +347,8 @@ public class JudgeManager {
                                        String searchPid,
                                        Integer searchStatus,
                                        String searchUsername,
-                                       Boolean completeProblemID) throws StatusAccessDeniedException {
+                                       Boolean completeProblemID,
+                                       Long gid) throws StatusAccessDeniedException {
         // 页数，每页题数若为空，设置默认值
         if (currentPage == null || currentPage < 1) currentPage = 1;
         if (limit == null || limit < 1) limit = 30;
@@ -369,7 +378,8 @@ public class JudgeManager {
                 searchStatus,
                 searchUsername,
                 uid,
-                completeProblemID);
+                completeProblemID,
+                gid);
     }
 
 
@@ -423,8 +433,9 @@ public class JudgeManager {
 
         Contest contest = contestEntityService.getById(submitIdListDto.getCid());
 
-
-        boolean isContestAdmin = isRoot || userRolesVo.getUid().equals(contest.getUid());
+        boolean isContestAdmin = isRoot
+                || userRolesVo.getUid().equals(contest.getUid())
+                || (contest.getIsGroup() && groupValidator.isGroupRoot(userRolesVo.getUid(), contest.getGid()));
         // 如果是封榜时间且不是比赛管理员和超级管理员
         boolean isSealRank = contestValidator.isSealRank(userRolesVo.getUid(), contest, true, isRoot);
 
@@ -482,7 +493,8 @@ public class JudgeManager {
         if (judge.getCid() != 0 && userRolesVo != null && !isRoot) {
             Contest contest = contestEntityService.getById(judge.getCid());
             // 如果不是比赛管理员 比赛封榜不能看
-            if (!contest.getUid().equals(userRolesVo.getUid())) {
+            if (!contest.getUid().equals(userRolesVo.getUid()) ||
+                    (contest.getIsGroup() && !groupValidator.isGroupRoot(userRolesVo.getUid(), contest.getGid()))) {
                 // 当前是比赛期间 同时处于封榜时间
                 if (contest.getSealRank() && contest.getStatus().intValue() == Constants.Contest.STATUS_RUNNING.getCode()
                         && contest.getSealRankTime().before(new Date())) {

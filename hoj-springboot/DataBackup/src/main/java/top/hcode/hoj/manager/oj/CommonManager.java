@@ -3,7 +3,6 @@ package top.hcode.hoj.manager.oj;
 import cn.hutool.core.util.IdUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.wf.captcha.ArithmeticCaptcha;
-import com.wf.captcha.SpecCaptcha;
 import com.wf.captcha.base.Captcha;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -52,7 +51,6 @@ public class CommonManager {
     @Autowired
     private TrainingCategoryEntityService trainingCategoryEntityService;
 
-
     public CaptchaVo getCaptcha() {
         ArithmeticCaptcha specCaptcha = new ArithmeticCaptcha(90, 30, 4);
         specCaptcha.setCharType(Captcha.TYPE_DEFAULT);
@@ -71,16 +69,19 @@ public class CommonManager {
 
 
     public List<TrainingCategory> getTrainingCategory() {
-        return trainingCategoryEntityService.list();
+        QueryWrapper<TrainingCategory> trainingCategoryQueryWrapper = new QueryWrapper<>();
+        trainingCategoryQueryWrapper.isNull("gid");
+        return trainingCategoryEntityService.list(trainingCategoryQueryWrapper);
     }
 
     public List<Tag> getAllProblemTagsList(String oj) {
         List<Tag> tagList;
         oj = oj.toUpperCase();
+        QueryWrapper<Tag> tagQueryWrapper = new QueryWrapper<>();
+        tagQueryWrapper.isNull("gid");
         if (oj.equals("ALL")) {
-            tagList = tagEntityService.list();
+            tagList = tagEntityService.list(tagQueryWrapper);
         } else {
-            QueryWrapper<Tag> tagQueryWrapper = new QueryWrapper<>();
             tagQueryWrapper.eq("oj", oj);
             tagList = tagEntityService.list(tagQueryWrapper);
         }
@@ -88,7 +89,7 @@ public class CommonManager {
     }
 
 
-    public Collection<Tag> getProblemTags(Long pid) {
+    public Collection<Tag> getProblemTags(Long pid){
         Map<String, Object> map = new HashMap<>();
         map.put("pid", pid);
         List<Long> tidList = problemTagEntityService.listByMap(map)
@@ -119,7 +120,7 @@ public class CommonManager {
         return languageEntityService.list(queryWrapper);
     }
 
-    public Collection<Language> getProblemLanguages(Long pid) {
+    public Collection<Language> getProblemLanguages(Long pid){
         QueryWrapper<ProblemLanguage> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("pid", pid).select("lid");
         List<Long> idList = problemLanguageEntityService.list(queryWrapper)
@@ -133,5 +134,4 @@ public class CommonManager {
         queryWrapper.eq("pid", pid);
         return codeTemplateEntityService.list(queryWrapper);
     }
-
 }

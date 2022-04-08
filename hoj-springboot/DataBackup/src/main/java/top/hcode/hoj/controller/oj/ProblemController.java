@@ -78,9 +78,10 @@ public class ProblemController {
      * @Return CommonResult
      * @Since 2020/10/27
      */
-    @RequestMapping(value = "/get-problem", method = RequestMethod.GET)
-    public CommonResult<ProblemInfoVo> getProblemInfo(@RequestParam(value = "problemId", required = true) String problemId) {
-        return problemService.getProblemInfo(problemId);
+    @RequestMapping(value = "/get-problem-detail", method = RequestMethod.GET)
+    public CommonResult<ProblemInfoVo> getProblemInfo(@RequestParam(value = "problemId", required = true) String problemId,
+                                                      @RequestParam(value = "gid", required = false) Long gid) {
+        return problemService.getProblemInfo(problemId,gid);
     }
 
 

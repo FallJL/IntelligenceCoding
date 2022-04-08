@@ -205,7 +205,8 @@
       v-if="
         (submission.code && submission.share && codeShare) ||
           isMeSubmisson ||
-          isAdminRole
+          isAdminRole ||
+          (submission.gid && isGroupRoot)
       "
     >
       <el-col :span="24" style="margin-top: 13px;" v-if="submission.code">
@@ -328,6 +329,14 @@ export default {
           params: {
             contestID: row.cid,
             problemID: row.displayPid,
+          },
+        });
+      } else if (row.gid) {
+        this.$router.push({
+          name: 'GroupProblemDetails',
+          params: {
+            problemID: row.displayPid,
+            groupID: row.gid,
           },
         });
       } else {
@@ -453,6 +462,9 @@ export default {
     },
     isMeSubmisson() {
       return this.$store.getters.userInfo.uid === this.submission.uid;
+    },
+    isGroupRoot() {
+      return this.$store.getters.isGroupRoot;
     },
   },
 };

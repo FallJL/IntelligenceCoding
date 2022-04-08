@@ -383,7 +383,7 @@ export default {
       addProblemDialogVisible: false,
       AddRemoteOJProblemDialogVisible: false,
       addRemoteOJproblemLoading: false,
-      otherOJName: 'HDU',
+      otherOJName: 'POJ',
       otherOJProblemId: '',
       REMOTE_OJ: {},
       displayId: '',

@@ -52,6 +52,14 @@
           >{{ $t('m.NavBar_Discussion') }}</el-menu-item
         >
 
+        <el-menu-item index="/group"
+          ><i
+            class="fa fa-users"
+            style="margin-right: 5px;width: 24px;text-align: center;"
+          ></i
+          >{{ $t('m.NavBar_Group') }}</el-menu-item
+        >
+
         <el-submenu index="about">
           <template slot="title"
             ><i class="el-icon-info"></i>{{ $t('m.NavBar_About') }}</template
@@ -474,6 +482,18 @@
 
           <mu-list-item
             button
+            to="/group"
+            @click="opendrawer = !opendrawer"
+            active-class="mobile-menu-active"
+          >
+            <mu-list-item-action>
+              <mu-icon value=":fa fa-users" size="24"></mu-icon>
+            </mu-list-item-action>
+            <mu-list-item-title>{{ $t('m.NavBar_Group') }}</mu-list-item-title>
+          </mu-list-item>
+
+          <mu-list-item
+            button
             :ripple="false"
             nested
             :open="openSideMenu === 'about'"
@@ -725,7 +745,6 @@ export default {
 <style scoped>
 #header {
   min-width: 300px;
-  position: fixed;
   top: 0;
   left: 0;
   height: auto;

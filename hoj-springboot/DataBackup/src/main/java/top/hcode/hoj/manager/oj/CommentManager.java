@@ -2,6 +2,14 @@ package top.hcode.hoj.manager.oj;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.extra.emoji.EmojiUtil;
+import org.springframework.beans.factory.annotation.Value;
+import top.hcode.hoj.dao.contest.ContestEntityService;
+import top.hcode.hoj.dao.contest.ContestRegisterEntityService;
+import top.hcode.hoj.pojo.entity.contest.Contest;
+import top.hcode.hoj.pojo.entity.contest.ContestRegister;
+import top.hcode.hoj.pojo.vo.ReplyVo;
+import top.hcode.hoj.validator.ContestValidator;
+import top.hcode.hoj.validator.GroupValidator;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -21,7 +29,6 @@ import top.hcode.hoj.pojo.entity.discussion.Reply;
 import top.hcode.hoj.pojo.entity.user.UserAcproblem;
 import top.hcode.hoj.pojo.vo.CommentListVo;
 import top.hcode.hoj.pojo.vo.CommentVo;
-import top.hcode.hoj.pojo.vo.ReplyVo;
 import top.hcode.hoj.pojo.vo.UserRolesVo;
 import top.hcode.hoj.dao.discussion.CommentEntityService;
 import top.hcode.hoj.dao.discussion.CommentLikeEntityService;
@@ -56,14 +63,34 @@ public class CommentManager {
     @Autowired
     private UserAcproblemEntityService userAcproblemEntityService;
 
+    @Autowired
+    private ContestEntityService contestEntityService;
 
-    public CommentListVo getComments(Long cid, Integer did, Integer limit, Integer currentPage) {
+    @Autowired
+    private GroupValidator groupValidator;
+
+    @Autowired
+    private ContestValidator contestValidator;
+
+    @Value("${hoj.web-config.default-user-limit.comment.ac-initial-value}")
+    private Integer defaultCreateCommentACInitValue;
+
+    public CommentListVo getComments(Long cid, Integer did, Integer limit, Integer currentPage) throws StatusForbiddenException {
 
         // 如果有登录，则获取当前登录的用户
         Session session = SecurityUtils.getSubject().getSession();
         UserRolesVo userRolesVo = (UserRolesVo) session.getAttribute("userInfo");
 
         boolean isRoot = SecurityUtils.getSubject().hasRole("root");
+
+        Discussion discussion = discussionEntityService.getById(did);
+        if (discussion != null) {
+            if (discussion.getGid() != null
+                    && !isRoot
+                    && !groupValidator.isGroupMember(userRolesVo.getUid(), discussion.getGid())) {
+                throw new StatusForbiddenException("对不起，您无权限操作！");
+            }
+        }
 
         IPage<CommentVo> commentList = commentEntityService.getCommentList(limit, currentPage, cid, did, isRoot,
                 userRolesVo != null ? userRolesVo.getUid() : null);
@@ -110,19 +137,36 @@ public class CommentManager {
         Session session = SecurityUtils.getSubject().getSession();
         UserRolesVo userRolesVo = (UserRolesVo) session.getAttribute("userInfo");
 
+        boolean isRoot = SecurityUtils.getSubject().hasRole("root");
+        boolean isProblemAdmin = SecurityUtils.getSubject().hasRole("problem_admin");
+        boolean isAdmin = SecurityUtils.getSubject().hasRole("admin");
+
+        Long cid = comment.getCid();
+
         // 比赛外的评论 除管理员外 只有AC 10道以上才可评论
-        if (comment.getCid() == null) {
-            if (!SecurityUtils.getSubject().hasRole("root")
-                    && !SecurityUtils.getSubject().hasRole("admin")
-                    && !SecurityUtils.getSubject().hasRole("problem_admin")) {
+        if (cid == null) {
+            if (!isRoot && !isProblemAdmin && !isAdmin) {
                 QueryWrapper<UserAcproblem> queryWrapper = new QueryWrapper<>();
                 queryWrapper.eq("uid", userRolesVo.getUid()).select("distinct pid");
                 int userAcProblemCount = userAcproblemEntityService.count(queryWrapper);
 
-                if (userAcProblemCount < 10) {
-                    throw new StatusForbiddenException("对不起，您暂时不能评论！请先去提交题目通过10道以上!");
+                if (userAcProblemCount < defaultCreateCommentACInitValue) {
+                    throw new StatusForbiddenException("对不起，您暂时不能评论！请先去提交题目通过"
+                            + defaultCreateCommentACInitValue + "道以上!");
                 }
             }
+
+            Discussion discussion = discussionEntityService.getById(comment.getDid());
+
+            Long gid = discussion.getGid();
+            if (gid != null) {
+                if (!isRoot && !groupValidator.isGroupMember(userRolesVo.getUid(), gid)) {
+                    throw new StatusForbiddenException("对不起，您无权限操作！");
+                }
+            }
+        } else {
+            Contest contest = contestEntityService.getById(cid);
+            contestValidator.validateContestAuth(contest, userRolesVo, isRoot);
         }
 
         comment.setFromAvatar(userRolesVo.getAvatar())
@@ -165,57 +209,78 @@ public class CommentManager {
                     commentEntityService.updateCommentMsg(discussion.getUid(),
                             userRolesVo.getUid(),
                             comment.getContent(),
-                            comment.getDid());
+                            comment.getDid(),
+                            discussion.getGid());
                 }
             }
             return commentVo;
         } else {
             throw new StatusFailException("评论失败，请重新尝试！");
         }
-
     }
-
 
     @Transactional(rollbackFor = Exception.class)
     public void deleteComment(Comment comment) throws StatusForbiddenException, StatusFailException {
         // 获取当前登录的用户
         Session session = SecurityUtils.getSubject().getSession();
         UserRolesVo userRolesVo = (UserRolesVo) session.getAttribute("userInfo");
+
+        boolean isRoot = SecurityUtils.getSubject().hasRole("root");
+        boolean isProblemAdmin = SecurityUtils.getSubject().hasRole("problem_admin");
+        boolean isAdmin = SecurityUtils.getSubject().hasRole("admin");
         // 如果不是评论本人 或者不是管理员 无权限删除该评论
-        if (comment.getFromUid().equals(userRolesVo.getUid())
-                || SecurityUtils.getSubject().hasRole("root")
-                || SecurityUtils.getSubject().hasRole("admin")
-                || SecurityUtils.getSubject().hasRole("problem_admin")) {
 
-            // 获取需要删除该评论的回复数
-            int replyNum = replyEntityService.count(new QueryWrapper<Reply>().eq("comment_id", comment.getId()));
+        Long cid = comment.getCid();
 
-            // 删除该数据 包括关联外键的reply表数据
-            boolean isDeleteComment = commentEntityService.removeById(comment.getId());
+        if (cid == null) {
+            Discussion discussion = discussionEntityService.getById(comment.getDid());
 
-            // 同时需要删除该评论的回复表数据
-            replyEntityService.remove(new UpdateWrapper<Reply>().eq("comment_id", comment.getId()));
-
-            if (isDeleteComment) {
-                // 如果是讨论区的回复，删除成功需要减少统计该讨论的回复数
-                if (comment.getDid() != null) {
-                    UpdateWrapper<Discussion> discussionUpdateWrapper = new UpdateWrapper<>();
-                    discussionUpdateWrapper.eq("id", comment.getDid())
-                            .setSql("comment_num=comment_num-" + (replyNum + 1));
-                    discussionEntityService.update(discussionUpdateWrapper);
+            Long gid = discussion.getGid();
+            if (gid == null) {
+                if (!comment.getFromUid().equals(userRolesVo.getUid()) && !isRoot && !isProblemAdmin && !isAdmin) {
+                    throw new StatusForbiddenException("无权删除该评论");
                 }
             } else {
-                throw new StatusFailException("删除失败，请重新尝试");
+                if (!groupValidator.isGroupAdmin(userRolesVo.getUid(), gid)
+                        && !comment.getFromUid().equals(userRolesVo.getUid())
+                        && !isRoot) {
+                    throw new StatusForbiddenException("无权删除该评论");
+                }
             }
-
         } else {
-            throw new StatusForbiddenException("无权删除该评论");
+            Contest contest = contestEntityService.getById(cid);
+            Long gid = contest.getGid();
+            if (!comment.getFromUid().equals(userRolesVo.getUid())
+                    && !isRoot
+                    && !contest.getUid().equals(userRolesVo.getUid())
+                    && !(contest.getIsGroup() && groupValidator.isGroupRoot(userRolesVo.getUid(), gid))) {
+                throw new StatusForbiddenException("无权删除该评论");
+            }
+        }
+        // 获取需要删除该评论的回复数
+        int replyNum = replyEntityService.count(new QueryWrapper<Reply>().eq("comment_id", comment.getId()));
+
+        // 删除该数据 包括关联外键的reply表数据
+        boolean isDeleteComment = commentEntityService.removeById(comment.getId());
+
+        // 同时需要删除该评论的回复表数据
+        replyEntityService.remove(new UpdateWrapper<Reply>().eq("comment_id", comment.getId()));
+
+        if (isDeleteComment) {
+            // 如果是讨论区的回复，删除成功需要减少统计该讨论的回复数
+            if (comment.getDid() != null) {
+                UpdateWrapper<Discussion> discussionUpdateWrapper = new UpdateWrapper<>();
+                discussionUpdateWrapper.eq("id", comment.getDid())
+                        .setSql("comment_num=comment_num-" + (replyNum + 1));
+                discussionEntityService.update(discussionUpdateWrapper);
+            }
+        } else {
+            throw new StatusFailException("删除失败，请重新尝试");
         }
     }
 
-
     @Transactional(rollbackFor = Exception.class)
-    public void addDiscussionLike(Integer cid, Boolean toLike, Integer sourceId, String sourceType) throws StatusFailException {
+    public void addCommentLike(Integer cid, Boolean toLike, Integer sourceId, String sourceType) throws StatusFailException {
 
         // 获取当前登录的用户
         Session session = SecurityUtils.getSubject().getSession();
@@ -240,7 +305,10 @@ public class CommentManager {
             if (comment != null) {
                 comment.setLikeNum(comment.getLikeNum() + 1);
                 commentEntityService.updateById(comment);
-                commentEntityService.updateCommentLikeMsg(comment.getFromUid(), userRolesVo.getUid(), sourceId, sourceType);
+                // 当前的评论要不是点赞者的 才发送点赞消息
+                if (!userRolesVo.getUsername().equals(comment.getFromName())) {
+                    commentEntityService.updateCommentLikeMsg(comment.getFromUid(), userRolesVo.getUid(), sourceId, sourceType);
+                }
             }
         } else { // 取消点赞
             if (commentLike != null) { // 如果存在就删除
@@ -257,13 +325,22 @@ public class CommentManager {
 
     }
 
-    public List<ReplyVo> getAllReply(Integer commentId, Long cid) {
+    public List<ReplyVo> getAllReply(Integer commentId, Long cid) throws StatusForbiddenException {
 
         // 如果有登录，则获取当前登录的用户
         Session session = SecurityUtils.getSubject().getSession();
         UserRolesVo userRolesVo = (UserRolesVo) session.getAttribute("userInfo");
         boolean isRoot = SecurityUtils.getSubject().hasRole("root");
 
+        Comment comment = commentEntityService.getById(commentId);
+
+        Discussion discussion = discussionEntityService.getById(comment.getDid());
+        Long gid = discussion.getGid();
+        if (gid != null) {
+            if (!isRoot && !groupValidator.isGroupMember(userRolesVo.getUid(), gid)) {
+                throw new StatusForbiddenException("对不起，您无权限操作！");
+            }
+        }
         return replyEntityService.getAllReplyByCommentId(cid,
                 userRolesVo != null ? userRolesVo.getUid() : null,
                 isRoot,
@@ -271,7 +348,7 @@ public class CommentManager {
     }
 
 
-    public ReplyVo addReply(ReplyDto replyDto) throws StatusFailException {
+    public ReplyVo addReply(ReplyDto replyDto) throws StatusFailException, StatusForbiddenException {
 
         if (StringUtils.isEmpty(replyDto.getReply().getContent().trim())) {
             throw new StatusFailException("回复内容不能为空！");
@@ -280,7 +357,40 @@ public class CommentManager {
         // 获取当前登录的用户
         Session session = SecurityUtils.getSubject().getSession();
         UserRolesVo userRolesVo = (UserRolesVo) session.getAttribute("userInfo");
+
+        boolean isRoot = SecurityUtils.getSubject().hasRole("root");
+        boolean isProblemAdmin = SecurityUtils.getSubject().hasRole("problem_admin");
+        boolean isAdmin = SecurityUtils.getSubject().hasRole("admin");
+
         Reply reply = replyDto.getReply();
+
+        Comment comment = commentEntityService.getById(reply.getCommentId());
+
+        Long cid = comment.getCid();
+
+        if (cid == null) {
+            if (!isRoot && !isProblemAdmin && !isAdmin) {
+                QueryWrapper<UserAcproblem> queryWrapper = new QueryWrapper<>();
+                queryWrapper.eq("uid", userRolesVo.getUid()).select("distinct pid");
+                int userAcProblemCount = userAcproblemEntityService.count(queryWrapper);
+
+                if (userAcProblemCount < defaultCreateCommentACInitValue) {
+                    throw new StatusForbiddenException("对不起，您暂时不能回复！请先去提交题目通过" +
+                            defaultCreateCommentACInitValue + "道以上!");
+                }
+            }
+            Discussion discussion = discussionEntityService.getById(comment.getDid());
+
+            Long gid = discussion.getGid();
+            if (gid != null) {
+                if (!groupValidator.isGroupMember(userRolesVo.getUid(), gid) && !isRoot) {
+                    throw new StatusForbiddenException("对不起，您无权限操作！");
+                }
+            }
+        } else {
+            Contest contest = contestEntityService.getById(cid);
+            contestValidator.validateContestAuth(contest, userRolesVo, isRoot);
+        }
         reply.setFromAvatar(userRolesVo.getAvatar())
                 .setFromName(userRolesVo.getUsername())
                 .setFromUid(userRolesVo.getUid());
@@ -329,28 +439,56 @@ public class CommentManager {
         // 获取当前登录的用户
         Session session = SecurityUtils.getSubject().getSession();
         UserRolesVo userRolesVo = (UserRolesVo) session.getAttribute("userInfo");
+
+        boolean isRoot = SecurityUtils.getSubject().hasRole("root");
+        boolean isProblemAdmin = SecurityUtils.getSubject().hasRole("problem_admin");
+        boolean isAdmin = SecurityUtils.getSubject().hasRole("admin");
+
         Reply reply = replyDto.getReply();
-        // 如果不是评论本人 或者不是管理员 无权限删除该评论
-        if (reply.getFromUid().equals(userRolesVo.getUid())
-                || SecurityUtils.getSubject().hasRole("root")
-                || SecurityUtils.getSubject().hasRole("admin")
-                || SecurityUtils.getSubject().hasRole("problem_admin")) {
-            // 删除该数据
-            boolean isOk = replyEntityService.removeById(reply.getId());
-            if (isOk) {
-                // 如果是讨论区的回复，删除成功需要减少统计该讨论的回复数
-                if (replyDto.getDid() != null) {
-                    UpdateWrapper<Discussion> discussionUpdateWrapper = new UpdateWrapper<>();
-                    discussionUpdateWrapper.eq("id", replyDto.getDid())
-                            .setSql("comment_num=comment_num-1");
-                    discussionEntityService.update(discussionUpdateWrapper);
+
+        Comment comment = commentEntityService.getById(reply.getCommentId());
+
+        Long cid = comment.getCid();
+
+        if (cid == null) {
+            Discussion discussion = discussionEntityService.getById(comment.getDid());
+
+            Long gid = discussion.getGid();
+            if (gid == null) {
+                if (!reply.getFromUid().equals(userRolesVo.getUid())
+                        && !isRoot
+                        && !isProblemAdmin
+                        && !isAdmin) {
+                    throw new StatusForbiddenException("无权删除该回复");
                 }
             } else {
-                throw new StatusFailException("删除失败，请重新尝试");
+                if (!reply.getFromUid().equals(userRolesVo.getUid())
+                        && !isRoot
+                        && !groupValidator.isGroupAdmin(userRolesVo.getUid(), gid)) {
+                    throw new StatusForbiddenException("无权删除该回复");
+                }
             }
-
         } else {
-            throw new StatusForbiddenException("无权删除该回复");
+            Contest contest = contestEntityService.getById(cid);
+            if (!reply.getFromUid().equals(userRolesVo.getUid())
+                    && !isRoot
+                    && !contest.getUid().equals(userRolesVo.getUid())
+                    && !(contest.getIsGroup() && groupValidator.isGroupRoot(userRolesVo.getUid(), contest.getGid()))) {
+                throw new StatusForbiddenException("无权删除该回复");
+            }
+        }
+
+        boolean isOk = replyEntityService.removeById(reply.getId());
+        if (isOk) {
+            // 如果是讨论区的回复，删除成功需要减少统计该讨论的回复数
+            if (replyDto.getDid() != null) {
+                UpdateWrapper<Discussion> discussionUpdateWrapper = new UpdateWrapper<>();
+                discussionUpdateWrapper.eq("id", replyDto.getDid())
+                        .setSql("comment_num=comment_num-1");
+                discussionEntityService.update(discussionUpdateWrapper);
+            }
+        } else {
+            throw new StatusFailException("删除失败，请重新尝试");
         }
     }
 }

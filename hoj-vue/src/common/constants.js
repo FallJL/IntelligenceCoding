@@ -153,10 +153,10 @@ export const PROBLEM_LEVEL={
 
 
 export const REMOTE_OJ = [
-  {
-    name:'HDU',
-    key:"HDU"
-  },
+  // {
+  //   name:'HDU',
+  //   key:"HDU"
+  // },
   {
     name:"Codeforces",
     key:"CF"
@@ -208,6 +208,30 @@ export const TRAINING_TYPE = {
   'Private':{
     color:'danger',
     name:'Private'
+  }
+}
+
+export const GROUP_TYPE = {
+  PUBLIC: 1,
+  PROTECTED: 2,
+  PRIVATE: 3
+}
+
+export const GROUP_TYPE_REVERSE = {
+  '1':{
+    name: 'Public',
+    color: 'success',
+    tips: 'Group_Public_Tips',
+  },
+  '2':{
+    name: 'Protected',
+    color: 'warning',
+    tips: 'Group_Protected_Tips',
+  },
+  '3':{
+    name: 'Private',
+    color: 'danger',
+    tips: 'Group_Private_Tips',
   }
 }
 

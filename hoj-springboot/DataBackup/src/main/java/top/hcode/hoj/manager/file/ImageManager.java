@@ -3,6 +3,10 @@ package top.hcode.hoj.manager.file;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.IdUtil;
+import top.hcode.hoj.common.exception.StatusForbiddenException;
+import top.hcode.hoj.dao.group.GroupEntityService;
+import top.hcode.hoj.pojo.entity.group.Group;
+import top.hcode.hoj.validator.GroupValidator;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
@@ -38,8 +42,14 @@ public class ImageManager {
     @Autowired
     private UserInfoEntityService userInfoEntityService;
 
+    @Autowired
+    private GroupEntityService groupEntityService;
+
+    @Autowired
+    private GroupValidator groupValidator;
+
     @Transactional(rollbackFor = Exception.class)
-    public Map<Object,Object> uploadAvatar(MultipartFile image) throws StatusFailException, StatusSystemErrorException {
+    public Map<Object, Object> uploadAvatar(MultipartFile image) throws StatusFailException, StatusSystemErrorException {
         if (image == null) {
             throw new StatusFailException("上传的头像图片文件不能为空！");
         }
@@ -107,10 +117,60 @@ public class ImageManager {
                 .map();
     }
 
+    @Transactional(rollbackFor = Exception.class)
+    public Group uploadGroupAvatar(MultipartFile image, Long gid) throws StatusFailException, StatusSystemErrorException, StatusForbiddenException {
+        Session session = SecurityUtils.getSubject().getSession();
+        UserRolesVo userRolesVo = (UserRolesVo) session.getAttribute("userInfo");
 
+        boolean isRoot = SecurityUtils.getSubject().hasRole("root");
+        if (!isRoot && !groupValidator.isGroupRoot(userRolesVo.getUid(), gid)) {
+            throw new StatusForbiddenException("对不起，您无权限操作！");
+        }
+
+        if (image == null) {
+            throw new StatusFailException("上传的头像图片文件不能为空！");
+        }
+        if (image.getSize() > 1024 * 1024 * 2) {
+            throw new StatusFailException("上传的头像图片文件大小不能大于2M！");
+        }
+
+        String suffix = image.getOriginalFilename().substring(image.getOriginalFilename().lastIndexOf(".") + 1);
+        if (!"jpg,jpeg,gif,png,webp".toUpperCase().contains(suffix.toUpperCase())) {
+            throw new StatusFailException("请选择jpg,jpeg,gif,png,webp格式的头像图片！");
+        }
+
+        FileUtil.mkdir(Constants.File.GROUP_AVATAR_FOLDER.getPath());
+
+        String filename = IdUtil.simpleUUID() + "." + suffix;
+        try {
+            image.transferTo(FileUtil.file(Constants.File.GROUP_AVATAR_FOLDER.getPath() + File.separator + filename));
+        } catch (Exception e) {
+            log.error("头像文件上传异常-------------->", e);
+            throw new StatusSystemErrorException("服务器异常：头像上传失败！");
+        }
+
+        fileEntityService.updateFileToDeleteByGidAndType(gid, "avatar");
+
+        UpdateWrapper<Group> GroupUpdateWrapper = new UpdateWrapper<>();
+        GroupUpdateWrapper.set("avatar", Constants.File.IMG_API.getPath() + filename)
+                .eq("id", gid);
+        groupEntityService.update(GroupUpdateWrapper);
+
+        top.hcode.hoj.pojo.entity.common.File imgFile = new top.hcode.hoj.pojo.entity.common.File();
+        imgFile.setName(filename).setFolderPath(Constants.File.GROUP_AVATAR_FOLDER.getPath())
+                .setFilePath(Constants.File.GROUP_AVATAR_FOLDER.getPath() + File.separator + filename)
+                .setSuffix(suffix)
+                .setType("avatar")
+                .setGid(gid);
+        fileEntityService.saveOrUpdate(imgFile);
+
+        Group group = groupEntityService.getById(gid);
+
+        return group;
+    }
 
     @Transactional(rollbackFor = Exception.class)
-    public Map<Object,Object> uploadCarouselImg(MultipartFile image) throws StatusFailException, StatusSystemErrorException {
+    public Map<Object, Object> uploadCarouselImg(MultipartFile image) throws StatusFailException, StatusSystemErrorException {
 
         if (image == null) {
             throw new StatusFailException("上传的图片文件不能为空！");

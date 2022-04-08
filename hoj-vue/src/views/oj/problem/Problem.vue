@@ -706,6 +706,7 @@ export default {
       captchaCode: '',
       captchaSrc: '',
       contestID: 0,
+      groupID: null,
       problemID: '',
       trainingID: null,
       submitting: false,
@@ -807,6 +808,7 @@ export default {
         currentPage: this.mySubmission_currentPage,
         problemID: this.problemID,
         contestID: this.contestID,
+        gid: this.groupID,
         limit: this.mySubmission_limit,
       };
       if (this.contestID) {
@@ -955,6 +957,9 @@ export default {
       if (this.$route.params.contestID) {
         this.contestID = this.$route.params.contestID;
       }
+      if (this.$route.params.groupID) {
+        this.groupID = this.$route.params.groupID;
+      }
       this.problemID = this.$route.params.problemID;
       if (this.$route.params.trainingID) {
         this.trainingID = this.$route.params.trainingID;
@@ -964,7 +969,7 @@ export default {
           ? 'getContestProblem'
           : 'getProblem';
       this.loading = true;
-      api[func](this.problemID, this.contestID).then(
+      api[func](this.problemID, this.contestID, this.groupID).then(
         (res) => {
           let result = res.data.data;
           this.changeDomTitle({ title: result.problem.title });
@@ -1008,7 +1013,8 @@ export default {
               .getUserProblemStatus(
                 pidList,
                 isContestProblemList,
-                this.contestID
+                this.contestID,
+                this.groupID
               )
               .then((res) => {
                 let statusMap = res.data.data;
@@ -1102,23 +1108,39 @@ export default {
           params: { contestID: this.contestID },
           query: { problemID: this.problemID, completeProblemID: true },
         });
+      } else if (this.groupID) {
+        this.$router.push({
+          name: 'GroupSubmissionList',
+          query: {
+            problemID: this.problemID,
+            completeProblemID: true,
+            gid: this.groupID,
+          },
+        });
       } else {
         this.$router.push({
           name: 'SubmissionList',
-          query: { problemID: this.problemID, completeProblemID: true },
+          query: {
+            problemID: this.problemID,
+            completeProblemID: true,
+          },
         });
       }
     },
     goProblemDiscussion() {
-      this.$router.push({
-        name: 'ProblemDiscussion',
-        params: { problemID: this.problemID },
-      });
+      if (this.groupID) {
+        this.$router.push({
+          name: 'GroupProblemDiscussion',
+          params: { problemID: this.problemID, groupID: this.groupID },
+        });
+      } else {
+        this.$router.push({
+          name: 'ProblemDiscussion',
+          params: { problemID: this.problemID },
+        });
+      }
     },
 
-    handleRoute(route) {
-      this.$router.push(route);
-    },
     onChangeLang(newLang) {
       if (this.code == this.problemData.codeTemplate[this.language]) {
         //原语言模板未变化，只改变语言
@@ -1391,6 +1413,11 @@ export default {
             problemID: this.problemID,
             submitID: this.submissionId,
           },
+        });
+      } else if (this.groupID) {
+        this.$router.push({
+          name: 'GroupSubmissionDeatil',
+          params: { submitID: this.submissionId, gid: this.groupID },
         });
       } else {
         this.$router.push({
