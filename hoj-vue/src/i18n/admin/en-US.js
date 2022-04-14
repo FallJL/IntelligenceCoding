@@ -20,6 +20,7 @@ export const m = {
   Problem_Admin: 'Problem',
   Problem_List: 'Problem List',
   Create_Problem: 'Create Problem',
+  Admin_Group_Apply_Problem:'Group Problem Examine',
   Export_Import_Problem: 'Export | Import Problem',
   Training_Admin: 'Training',
   Training_List: 'Training List',
@@ -183,6 +184,8 @@ export const m = {
   Contest_Display: 'Contest Display',
   Add_Rmote_OJ_Problem: 'Add Remote OJ Problem',
   Add_From_Public_Problem: 'Add From Public Problem',
+  ACM_Contest_Add_From_Public_Problem_Tips:'ACM Contest: Only ACM type problem and Remote Judge problem can be imported',
+  OI_Contest_Add_From_Public_Problem_Tips:'OI Contest: Only OI type problem and Remote Judge problem can be imported',
   Auth: 'Auth',
   Modified_User: 'Modified User',
   All_Problem: 'All Problem',
@@ -272,7 +275,7 @@ export const m = {
   SPJ_Or_Interactive_Program: 'Special Or Interactive Program',
 
 
-  // /views/admin/problem/tag
+  // /views/admin/problem/Tag.vue
   Admin_Tag: 'Admin Tag',
   Add_Tag: 'Add Tag',
   Update_Tag: 'Update Tag',
@@ -283,6 +286,12 @@ export const m = {
   Tag_Color: 'Tag Color',
   Tag_Attribution: 'Tag Attribution',
   Delete_Tag_Tips: 'Are you sure you want to delete this tag?',
+
+  // /views/amdin/problem/GroupProblemList.vue
+  Search:'Search',
+  Enter_Group_ID:'Enter Group ID',
+  Agreed:'Agreed',
+  Examine:'Examine',
 
 
   // /views/admin/training/TrainingList.vue
