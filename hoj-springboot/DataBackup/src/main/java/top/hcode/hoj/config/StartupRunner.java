@@ -67,17 +67,17 @@ public class StartupRunner implements CommandLineRunner {
     @Value("${MYSQL_DATABASE_NAME:hoj}")
     private String mysqlDBName;
 
-    @Value("${MYSQL_HOST:172.20.0.3}")
+    @Value("${MYSQL_HOST:192.168.1.146}")
     private String mysqlHost;
 
-    @Value("${MYSQL_PUBLIC_HOST:172.20.0.3}")
+    @Value("${MYSQL_PUBLIC_HOST:192.168.1.146}")
     private String mysqlPublicHost;
 
     @Value("${MYSQL_PORT:3306}")
     private Integer mysqlPort;
 
     // 缓存配置
-    @Value("${REDIS_HOST:172.20.0.2}")
+    @Value("${REDIS_HOST:192.168.1.146}")
     private String redisHost;
 
     @Value("${REDIS_PORT:6379}")
@@ -90,16 +90,16 @@ public class StartupRunner implements CommandLineRunner {
     private String judgeToken;
 
     // 邮箱配置
-    @Value("${EMAIL_USERNAME}")
+    @Value("${EMAIL_USERNAME:your_email_username}")
     private String emailUsername;
 
-    @Value("${EMAIL_PASSWORD}")
+    @Value("${EMAIL_PASSWORD:your_email_password}")
     private String emailPassword;
 
-    @Value("${EMAIL_SERVER_HOST}")
+    @Value("${EMAIL_SERVER_HOST:your_email_host}")
     private String emailHost;
 
-    @Value("${EMAIL_SERVER_PORT}")
+    @Value("${EMAIL_SERVER_PORT:465}")
     private Integer emailPort;
 
     @Value("${HDU_ACCOUNT_USERNAME_LIST:}")
