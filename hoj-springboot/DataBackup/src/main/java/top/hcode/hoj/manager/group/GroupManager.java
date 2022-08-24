@@ -73,11 +73,12 @@ public class GroupManager {
         }
 
         String uid = "";
+        boolean isRoot = false;
         if (userRolesVo != null) {
             uid = userRolesVo.getUid();
+            isRoot = SecurityUtils.getSubject().hasRole("root");
         }
-
-        return groupEntityService.getGroupList(limit, currentPage, keyword, auth, uid, onlyMine);
+        return groupEntityService.getGroupList(limit, currentPage, keyword, auth, uid, onlyMine, isRoot);
     }
 
     public Group getGroup(Long gid) throws StatusNotFoundException, StatusForbiddenException {
@@ -211,19 +212,15 @@ public class GroupManager {
 
         QueryWrapper<Group> groupQueryWrapper = new QueryWrapper<>();
         groupQueryWrapper.eq("name", group.getName());
-
-        Group sameNameGroup = groupEntityService.getOne(groupQueryWrapper);
-
-        if (sameNameGroup != null) {
+        int sameNameGroupCount = groupEntityService.count(groupQueryWrapper);
+        if (sameNameGroupCount > 0) {
             throw new StatusFailException("团队名称已存在，请修改后重试！");
         }
 
         groupQueryWrapper = new QueryWrapper<>();
         groupQueryWrapper.eq("short_name", group.getShortName());
-
-        Group sameShortNameGroup = groupEntityService.getOne(groupQueryWrapper);
-
-        if (sameShortNameGroup != null) {
+        int sameShortNameGroupCount = groupEntityService.count(groupQueryWrapper);
+        if (sameShortNameGroupCount > 0) {
             throw new StatusFailException("团队简称已存在，请修改后重试！");
         }
 
@@ -269,20 +266,18 @@ public class GroupManager {
         }
 
         QueryWrapper<Group> groupQueryWrapper = new QueryWrapper<>();
-        groupQueryWrapper.eq("name", group.getName());
-
-        Group sameNameGroup = groupEntityService.getOne(groupQueryWrapper);
-
-        if (sameNameGroup != null && sameNameGroup.getId().longValue() != group.getId()) {
+        groupQueryWrapper.eq("name", group.getName())
+                .ne("id", group.getId());
+        int sameNameGroupCount = groupEntityService.count(groupQueryWrapper);
+        if (sameNameGroupCount > 0) {
             throw new StatusFailException("团队名称已存在，请修改后重试！");
         }
 
         groupQueryWrapper = new QueryWrapper<>();
-        groupQueryWrapper.eq("short_name", group.getShortName());
-
-        Group sameShortNameGroup= groupEntityService.getOne(groupQueryWrapper);
-
-        if (sameShortNameGroup != null && sameShortNameGroup.getId().longValue() != group.getId()) {
+        groupQueryWrapper.eq("short_name", group.getShortName())
+                .ne("id", group.getId());
+        int sameShortNameGroupCount = groupEntityService.count(groupQueryWrapper);
+        if (sameShortNameGroupCount > 0) {
             throw new StatusFailException("团队简称已存在，请修改后重试！");
         }
 

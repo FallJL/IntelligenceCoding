@@ -126,7 +126,7 @@ public class ConfigManager {
         List<JSONObject> serviceInfoList = new LinkedList<>();
         List<ServiceInstance> serviceInstances = discoveryClient.getInstances(judgeServiceName);
         for (ServiceInstance serviceInstance : serviceInstances) {
-            String result = restTemplate.getForObject(serviceInstance.getUri() + "/get-sys-config", String.class);
+            String result = restTemplate.getForObject("192.168.1.146" + "/get-sys-config", String.class);
             JSONObject jsonObject = JSONUtil.parseObj(result);
             jsonObject.put("service", serviceInstance);
             serviceInfoList.add(jsonObject);

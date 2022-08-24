@@ -69,7 +69,7 @@
               target="_blank"
           >{{ websiteConfig.projectName }}</a>
           <span style="margin-left:10px">
-            <el-dropdown @command="changeLanguage" placement="top">
+            <el-dropdown @command="changeWebLanguage" placement="top">
               <span class="el-dropdown-link">
                 <i class="fa fa-globe" aria-hidden="true">
                   {{ this.webLanguage == 'zh-CN' ? '简体中文' : 'English' }}</i
@@ -120,7 +120,7 @@ export default {
         return str.toUpperCase();
       }
     },
-    changeLanguage(language) {
+    changeWebLanguage(language) {
       this.$store.commit('changeWebLanguage', { language: language });
     },
   },

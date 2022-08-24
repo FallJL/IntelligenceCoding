@@ -6,9 +6,15 @@
         :router="true"
         :default-active="currentPath"
       >
-        <div class="logo">
-          <img :src="imgUrl" alt="oj admin" />
-        </div>
+        <el-tooltip
+            :content="$t('m.Click_To_Change_Web_Language')"
+            placement="bottom"
+            effect="dark"
+          >
+          <div class="logo" @click="changeWebLanguage(webLanguage == 'zh-CN' ? 'en-US' : 'zh-CN')">
+            <img :src="imgUrl" alt="Online Judge Admin" />
+          </div>
+        </el-tooltip>
         <el-menu-item index="/admin/">
           <i class="fa fa-tachometer fa-size" aria-hidden="true"></i
           >{{ $t('m.Dashboard') }}
@@ -46,9 +52,13 @@
           <el-menu-item index="/admin/problem/tag">{{
             $t('m.Admin_Tag')
           }}</el-menu-item>
+           <el-menu-item index="/admin/group-problem/apply"
+           v-if="isSuperAdmin || isProblemAdmin"
+           >{{$t('m.Admin_Group_Apply_Problem')}}
+           </el-menu-item>
           <el-menu-item
             index="/admin/problem/batch-operation"
-            v-if="isSuperAdmin"
+            v-if="isSuperAdmin || isProblemAdmin"
             >{{ $t('m.Export_Import_Problem') }}</el-menu-item
           >
         </el-submenu>
@@ -327,6 +337,19 @@
             >
               <mu-list-item-title>{{ $t('m.Admin_Tag') }}</mu-list-item-title>
             </mu-list-item>
+
+            <mu-list-item
+              v-if="isSuperAdmin || isProblemAdmin"
+              button
+              :ripple="false"
+              slot="nested"
+              to="/admin/group-problem/apply"
+              @click="opendrawer = !opendrawer"
+              active-class="mobile-menu-active"
+            >
+              <mu-list-item-title>{{ $t('m.Admin_Group_Apply_Problem') }}</mu-list-item-title>
+            </mu-list-item>
+
             <mu-list-item
               v-if="isSuperAdmin"
               button
@@ -539,7 +562,7 @@
           >{{ websiteConfig.projectName }}</a
         >
         <span style="margin-left:10px">
-          <el-dropdown @command="changeLanguage" placement="top">
+          <el-dropdown @command="changeWebLanguage" placement="top">
             <span class="el-dropdown-link" style="font-size:14px">
               <i class="fa fa-globe" aria-hidden="true">
                 {{ this.webLanguage == 'zh-CN' ? '简体中文' : 'English' }}</i
@@ -614,7 +637,7 @@ export default {
       let matched = this.$route.matched.filter((item) => item.meta.title); //获取路由信息，并过滤保留路由标题信息存入数组
       this.routeList = matched;
     },
-    changeLanguage(language) {
+    changeWebLanguage(language) {
       this.$store.commit('changeWebLanguage', { language: language });
     },
   },
@@ -657,6 +680,7 @@ export default {
 .vertical_menu .logo {
   margin: 20px 0;
   text-align: center;
+  cursor: pointer;
 }
 .vertical_menu .logo img {
   background-color: #fff;

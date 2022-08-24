@@ -18,6 +18,9 @@
                     <!-- 指定该Main Class为全局的唯一入口 -->
                     <mainClass>top.hcode.hoj.DataBackupApplication</mainClass>
                     <layout>ZIP</layout>
+                    <fork>false</fork>
+                    <wait>1000</wait>
+                    <maxAttempts>180</maxAttempts>
                 </configuration>
                 <executions>
                     <execution>
@@ -202,6 +205,18 @@
             <artifactId>jsoup</artifactId>
             <version>1.13.1</version>
         </dependency>
+
+        <dependency>
+            <groupId>net.java.dev.jna</groupId>
+            <artifactId>jna</artifactId>
+            <version>5.11.0</version>
+        </dependency>
+        <dependency>
+            <groupId>net.java.dev.jna</groupId>
+            <artifactId>jna-platform</artifactId>
+            <version>5.11.0</version>
+        </dependency>
+
 
     </dependencies>
 

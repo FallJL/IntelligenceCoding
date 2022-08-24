@@ -179,13 +179,10 @@ public class DiscussionManager {
         String problemId = discussion.getPid();
         if (problemId != null) {
             QueryWrapper<Problem> problemQueryWrapper = new QueryWrapper<>();
-            problemQueryWrapper.eq("problemId", problemId);
-            Problem problem = problemEntityService.getOne(problemQueryWrapper);
-
-            if (problem == null) {
-                throw new StatusNotFoundException("该题目不存在");
-            } else if (problem.getIsGroup()) {
-                discussion.setGid(problem.getGid());
+            problemQueryWrapper.eq("problem_id", problemId);
+            int problemCount = problemEntityService.count(problemQueryWrapper);
+            if (problemCount == 0) {
+                throw new StatusNotFoundException("对不起，该题目不存在，无法发布题解!");
             }
         }
 
@@ -288,11 +285,13 @@ public class DiscussionManager {
         Session session = SecurityUtils.getSubject().getSession();
         UserRolesVo userRolesVo = (UserRolesVo) session.getAttribute("userInfo");
 
-        boolean isRoot = SecurityUtils.getSubject().hasRole("root");
-
         Discussion discussion = discussionEntityService.getById(did);
-        if (!isRoot && !discussion.getUid().equals(userRolesVo.getUid()) && !groupValidator.isGroupAdmin(userRolesVo.getUid(), discussion.getGid())) {
-            throw new StatusForbiddenException("对不起，您无权限操作！");
+        if (discussion.getGid() != null) {
+            boolean isRoot = SecurityUtils.getSubject().hasRole("root");
+            if (!isRoot && !discussion.getUid().equals(userRolesVo.getUid())
+                    && !groupValidator.isGroupMember(userRolesVo.getUid(), discussion.getGid())) {
+                throw new StatusForbiddenException("对不起，您无权限操作！");
+            }
         }
 
         QueryWrapper<DiscussionLike> discussionLikeQueryWrapper = new QueryWrapper<>();
