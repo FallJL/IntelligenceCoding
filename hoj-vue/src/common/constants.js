@@ -185,6 +185,18 @@ export const CONTEST_STATUS = {
   'ENDED': 1
 }
 
+export const EXAM_STATUS = {
+  'SCHEDULED': -1,
+  'RUNNING': 0,
+  'ENDED': 1
+}
+
+export const PAPER_STATUS = {
+  'SCHEDULED': -1,
+  'RUNNING': 0,
+  'ENDED': 1
+}
+
 export const CONTEST_STATUS_REVERSE = {
   '-1': {
     name: 'Scheduled',
@@ -200,7 +212,48 @@ export const CONTEST_STATUS_REVERSE = {
   }
 }
 
+export const EXAM_STATUS_REVERSE = {
+  '-1': {
+    name: 'Scheduled',
+    color: '#f90'
+  },
+  '0': {
+    name: 'Running',
+    color: '#19be6b'
+  },
+  '1': {
+    name: 'Ended',
+    color: '#ed3f14'
+  }
+}
+
+export const PAPER_STATUS_REVERSE = {
+  '-1': {
+    name: 'Scheduled',
+    color: '#f90'
+  },
+  '0': {
+    name: 'Running',
+    color: '#19be6b'
+  },
+  '1': {
+    name: 'Ended',
+    color: '#ed3f14'
+  }
+}
+
 export const TRAINING_TYPE = {
+  'Public':{
+    color:'success',
+    name:'Public'
+  },
+  'Private':{
+    color:'danger',
+    name:'Private'
+  }
+}
+
+export const PAPER_TYPE = {
   'Public':{
     color:'success',
     name:'Public'
@@ -264,7 +317,61 @@ export const CONTEST_TYPE_REVERSE = {
   }
 }
 
+export const EXAM_TYPE_REVERSE = {
+  '0': {
+    name:'Public',
+    color:'success',
+    tips:'Public_Tips',
+    submit:true,              // 公开赛可看可提交
+    look:true,
+  },
+  '1':{
+    name:'Private',
+    color:'danger',
+    tips:'Private_Tips',
+    submit:false,         // 私有赛 必须要密码才能看和提交
+    look:false,
+  },
+  '2':{
+    name:'Protected',
+    color:'warning',
+    tips:'Protected_Tips',
+    submit:false,       //保护赛，可以看但是不能提交，提交需要附带比赛密码
+    look:true,
+  }
+}
+
+export const PAPER_TYPE_REVERSE = {
+  '0': {
+    name:'Public',
+    color:'success',
+    tips:'Public_Tips',
+    submit:true,              // 公开赛可看可提交
+    look:true,
+  },
+  '1':{
+    name:'Private',
+    color:'danger',
+    tips:'Private_Tips',
+    submit:false,         // 私有赛 必须要密码才能看和提交
+    look:false,
+  },
+  '2':{
+    name:'Protected',
+    color:'warning',
+    tips:'Protected_Tips',
+    submit:false,       //保护赛，可以看但是不能提交，提交需要附带比赛密码
+    look:true,
+  }
+}
+
 export const CONTEST_TYPE = {
+  PUBLIC: 0,
+  PRIVATE: 1,
+  PROTECTED: 2
+}
+
+export const EXAM_TYPE = {
   PUBLIC: 0,
   PRIVATE: 1,
   PROTECTED: 2
@@ -301,8 +408,13 @@ export function buildProblemCodeKey (problemID, contestID = null) {
 export function buildContestAnnounceKey (uid, contestID) {
   return `${STORAGE_KEY.CONTEST_ANNOUNCE}_${uid}_${contestID}`
 }
-
+export function buildPaperAnnounceKey (uid, examID) {
+  return `${STORAGE_KEY.EXAM_ANNOUNCE}_${uid}_${examID}`
+}
 export function buildContestRankConcernedKey(contestID) {
   return `${STORAGE_KEY.CONTEST_RANK_CONCERNED}_${contestID}`
+}
+export function buildPaperRankConcernedKey(examID) {
+  return `${STORAGE_KEY.EXAM_RANK_CONCERNED}_${examID}`
 }
 

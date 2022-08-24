@@ -19,15 +19,18 @@ export const m = {
   System_Config: '系统配置',
   Problem_Admin: '题目管理',
   Problem_List: '题目列表',
-  Create_Problem: '增加题目',
+  // Create_Problem: '增加题目',
   Export_Import_Problem: '导入|导出题目',
   Training_Admin: '训练管理',
   Training_List: '训练列表',
-  Create_Training: '创建训练',
+  // Create_Training: '创建训练',
   Admin_Category: '分类管理',
   Contest_Admin: '比赛管理',
   Contest_List: '比赛列表',
-  Create_Contest: '创建比赛',
+  // Create_Contest: '创建比赛',
+  Exam_Admin: '考试管理',
+  Exam_List: '考试列表',
+  Create_Exam: '创建考试',
   Discussion: '讨论管理',
   Discussion_Admin: '讨论管理',
   Home_Page: '主页',
@@ -107,7 +110,7 @@ export const m = {
 
   // /views/admin/general/User.vue
   General_Auth: '权限管理',
-  Auth: '权限',
+  // Auth: '权限',
   Create_Auth: '创建权限',
   Edit_Auth: '编辑权限',
   Auth_Name: '名称',
@@ -273,8 +276,8 @@ export const m = {
   Admin_Tag: '标签管理',
   Add_Tag: '添加标签',
   Update_Tag: '修改标签',
-  To_Add: '添加',
-  To_Update: '更新',
+  // To_Add: '添加',
+  // To_Update: '更新',
   Tag_Name: '标签名称',
   Tag_Color: '标签颜色',
   Tag_Attribution: '标签归属',
@@ -296,6 +299,10 @@ export const m = {
   View_Training_Problem_List: '查看训练题目列表',
   Delete_Training_Tips: '此操作将删除该训练提交记录、榜单等数据, 是否继续?',
 
+  // /views/admin/exam/PaperList.vue
+  View_Paper_Problem_List: '查看训练题目列表',
+  Delete_Paper_Tips: '此操作将删除该训练提交记录、榜单等数据, 是否继续?',
+
   // /views/admin/training/Training.vue
   Training_rank: '训练排序编号(升序)',
   Training_Title: '训练标题',
@@ -306,7 +313,7 @@ export const m = {
   Private_Training: '私有训练',
   Training_Password: '训练密码',
   Edit_Training: '编辑训练',
-  Create_Training: '创建训练',
+  // Create_Training: '创建训练',
   Redirect_To_Category: '当前训练的分类列表为空，请先前往创建分类！',
   Redirect: '重定向',
 
@@ -315,6 +322,13 @@ export const m = {
   Add_Training_Problem: '添加训练题目',
   Remove_Training_Problem_Tips: '你是否确定要将该题目移出训练？',
   Training_Problem_Rank: '题目显示顺序(升序)',
+
+  // /views/admin/exam/PaperProblemList.vue
+  Paper_Problem_List: '训练题目列表',
+  Add_Paper_Problem: '添加训练题目',
+  Remove_Paper_Problem_Tips: '你是否确定要将该题目移出训练？',
+  Paper_Problem_Rank: '题目显示顺序(升序)',
+
 
   // /views/admin/training/Category.vue
   Add_Category: '添加分类',
@@ -326,7 +340,7 @@ export const m = {
   Category_Color: '分类颜色',
   Delete_Category_Tips: '你是否确定删除该分类？',
 
-  // /views/admin/contest/ContestList.vue
+  // /views/admin/contest/ExamList.vue
   Start_Time: '开始时间',
   End_Time: '结束时间',
   Creator: '创建者',
@@ -377,6 +391,29 @@ export const m = {
   Show_Realname: '真实姓名',
   Account_Limit: '账号限制（登录用户名）',
   The_allowed_account_will_be: '允许参加比赛的用户名是：',
+
+  // /views/admin/exam/Exam.vue
+  Exam_Title: '考试标题',
+  Exam_Description:  '考试描述',
+  Exam_Start_Time: '开始时间',
+  Exam_End_Time: '结束时间',
+  Exam_Duration: '比赛时长',
+  Exam_Rule_Type: '考试赛制',
+  Exam_Auth: '考试权限',
+  Exam_Password: '考试密码',
+  Exam_Seal_Half_Hour: '考试结束前半小时',
+  Exam_Seal_An_Hour: '考试结束前一小时',
+  Exam_Seal_All_Hour: '考试全程',
+  Real_Rank_After_Exam: '考试完取消封榜',
+  Seal_Rank_After_Exam: '考试完继续封榜',
+  Edit_Exam: '编辑考试',
+  Exam_Duration_Check: '考试时长不能小于0',
+  Exam_Time_Check: '开始时间应该早于结束时间',
+
+  // /views/admin/exam/ExamList.vue
+  View_Exam_Paper_List: '查看考试试卷列表',
+  View_Exam_Announcement_List: '查看考试公告列表',
+  Download_Exam_AC_Submission: '下载考试通过的提交代码',
 
   // /views/admin/discussion/Discussion.vue
   Discussion_ID: '讨论ID',

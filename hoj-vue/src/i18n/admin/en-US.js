@@ -19,17 +19,20 @@ export const m = {
   System_Config: 'System Config',
   Problem_Admin: 'Problem',
   Problem_List: 'Problem List',
-  Create_Problem: 'Create Problem',
+  // Create_Problem: 'Create Problem',
   Export_Import_Problem: 'Export | Import Problem',
   Training_Admin: 'Training',
   Training_List: 'Training List',
-  Create_Training: 'Create Training',
+  // Create_Training: 'Create Training',
   Admin_Category: 'Admin Category',
   Contest_Admin: 'Contest',
   Contest_List: 'Contest List',
-  Create_Contest: 'Create Contest',
+  // Create_Contest: 'Create Contest',
   Discussion: 'Discussion',
   Discussion_Admin: 'Admin Discussion',
+  Exam_Admin: 'Exam',
+  Exam_List: 'Exam list',
+  Create_Exam: 'create exam',
   Home_Page: 'Home Page',
   Logout: 'Logout',
   Log_Out_Successfully: 'Log out successfully',
@@ -107,7 +110,7 @@ export const m = {
 
   // /views/admin/general/Auth.vue
   General_Auth: 'Auth',
-  Auth: 'Auth',
+  // Auth: 'Auth',
   Create_Auth: 'Create Auth',
   Edit_Auth: 'Edit Auth',
   Auth_Name: 'Name',
@@ -276,9 +279,9 @@ export const m = {
   Admin_Tag: 'Admin Tag',
   Add_Tag: 'Add Tag',
   Update_Tag: 'Update Tag',
-  To_Add: 'Add',
-  To_Update: 'Update',
-  Create_Training: 'Create Training',
+  // To_Add: 'Add',
+  // To_Update: 'Update',
+  // Create_Training: 'Create Training',
   Tag_Name: 'Tag Name',
   Tag_Color: 'Tag Color',
   Tag_Attribution: 'Tag Attribution',
@@ -311,6 +314,12 @@ export const m = {
   Remove_Training_Problem_Tips: 'Are you sure you want to remove the problem from the training?',
   Training_Problem_Rank: 'Title Display Order(Ascending)',
 
+  // /views/admin/exam/PaperProblemList.vue
+  Paper_Problem_List: 'Paper Problem List',
+  Add_Paper_Problem: 'Add Paper Problem',
+  Remove_Paper_Problem_Tips: 'Are you sure you want to remove the problem from the training?',
+  Paper_Problem_Rank: 'Title Display Order(Ascending)',
+
   // /views/admin/training/Category.vue
   Add_Category: 'Add Category',
   Update_Category: 'Update Category',
@@ -330,7 +339,7 @@ export const m = {
   Upload_Problem_Succeeded: 'Upload Problem Succeeded',
   Upload_Problem_Failed: 'Upload Problem Failed',
 
-  // /views/admin/contest/ContestList.vue
+  // /views/admin/contest/ExamList.vue
   Start_Time: 'Start Time',
   End_Time: 'End Time',
   Creator: 'Creator',
@@ -381,6 +390,29 @@ export const m = {
   Show_Realname: 'Real name',
   Account_Limit: 'Account Limit (Login Username)',
   The_allowed_account_will_be: 'The allowed username will be ',
+
+  // /views/admin/exam/ExamList.vue
+  View_Exam_Paper_List: 'View Exam Paper List',
+  View_Exam_Announcement_List: 'View Exam Announcement List',
+  Download_Exam_AC_Submission: 'Download Exam AC Submissions',
+
+  // /views/admin/exam/Exam.vue
+  Exam_Title: 'Exam Title',
+  Exam_Description: 'Exam Description',
+  Exam_Start_Time: 'Start Time',
+  Exam_End_Time: 'End Time',
+  Exam_Duration: 'Exam Duration',
+  Exam_Rule_Type: 'Exam Rule Type',
+  Exam_Auth: 'Exam Auth',
+  Exam_Password: 'Exam Password',
+  Exam_Seal_Half_Hour: 'Half an hour',
+  Exam_Seal_An_Hour: 'An hour',
+  Exam_Seal_All_Hour: 'All hours',
+  Real_Rank_After_Exam: 'Real Rank After Exam',
+  Seal_Rank_After_Exam: 'Seal Rank After Exam',
+  Edit_Exam: 'Edit Exam',
+  Exam_Duration_Check: 'The duration of the Exam cannot be less than or equal to zero!',
+  Exam_Time_Check: 'The start time should be earlier than the end time!',
 
   // /views/admin/discussion/Discussion.vue
   Discussion_ID: 'Discussion ID',

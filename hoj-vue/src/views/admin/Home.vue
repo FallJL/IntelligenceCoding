@@ -73,6 +73,7 @@
           }}</el-menu-item>
         </el-submenu>
 
+        <!--        导航栏-比赛-->
         <el-submenu index="contest">
           <template slot="title"
             ><i class="fa fa-trophy fa-size" aria-hidden="true"></i
@@ -86,6 +87,21 @@
           }}</el-menu-item>
         </el-submenu>
 
+        <!--        导航栏-考试-->
+        <el-submenu index="exam">
+          <template slot="title"
+          ><i class="fa fa-trophy fa-size" aria-hidden="true"></i
+          >{{ $t('m.Exam_Admin') }}
+          </template>
+          <el-menu-item index="/admin/exam">{{
+              $t('m.Exam_List')
+            }}</el-menu-item>
+          <el-menu-item index="/admin/exam/create">{{
+              $t('m.Create_Exam')
+            }}</el-menu-item>
+        </el-submenu>
+
+        <!--        导航栏-讨论-->
         <el-submenu index="discussion">
           <template slot="title"
             ><i class="fa fa-comments fa-size" aria-hidden="true"></i
@@ -95,7 +111,9 @@
             $t('m.Discussion_Admin')
           }}</el-menu-item>
         </el-submenu>
+
       </el-menu>
+
       <div id="header">
         <el-row>
           <el-col :span="20">
@@ -383,6 +401,7 @@
             </mu-list-item>
           </mu-list-item>
 
+<!--          后台管理-比赛管理-->
           <mu-list-item
             button
             :ripple="false"
@@ -427,6 +446,52 @@
             </mu-list-item>
           </mu-list-item>
 
+<!--          后台管理-考试管理-->
+          <mu-list-item
+              button
+              :ripple="false"
+              nested
+              :open="openSideMenu === 'exam'"
+              @toggle-nested="openSideMenu = arguments[0] ? 'exam' : ''"
+          >
+            <mu-list-item-action>
+              <mu-icon value=":fa fa-trophy fa-size"></mu-icon>
+            </mu-list-item-action>
+            <mu-list-item-title>{{ $t('m.Exam_Admin') }}</mu-list-item-title>
+            <mu-list-item-action>
+              <mu-icon
+                  class="toggle-icon"
+                  size="24"
+                  value="keyboard_arrow_down"
+              ></mu-icon>
+            </mu-list-item-action>
+            <mu-list-item
+                button
+                :ripple="false"
+                slot="nested"
+                to="/admin/exam"
+                @click="opendrawer = !opendrawer"
+                active-class="mobile-menu-active"
+            >
+              <mu-list-item-title>{{
+                  $t('m.Exam_List')
+                }}</mu-list-item-title>
+            </mu-list-item>
+            <mu-list-item
+                button
+                :ripple="false"
+                slot="nested"
+                to="/admin/exam/create"
+                @click="opendrawer = !opendrawer"
+                active-class="mobile-menu-active"
+            >
+              <mu-list-item-title>{{
+                  $t('m.Create_exam')
+                }}</mu-list-item-title>
+            </mu-list-item>
+          </mu-list-item>
+
+<!--          后台管理-讨论管理-->
           <mu-list-item
             button
             :ripple="false"

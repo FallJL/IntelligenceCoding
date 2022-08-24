@@ -13,9 +13,13 @@ const Tag= ()=>import('@/views/admin/problem/Tag')
 const ProblemImportAndExport= ()=>import('@/views/admin/problem/ImportAndExport')
 const Contest= ()=>import('@/views/admin/contest/Contest')
 const ContestList= ()=>import('@/views/admin/contest/ContestList')
+const Exam= ()=>import('@/views/admin/exam/Exam')
+const ExamList= ()=>import('@/views/admin/exam/ExamList')
 const Training= ()=>import('@/views/admin/training/Training')
 const TrainingList= ()=>import('@/views/admin/training/TrainingList')
 const TrainingProblemList= ()=>import('@/views/admin/training/TrainingProblemList')
+const PaperList= ()=>import('@/views/admin/exam/PaperList')
+const PaperProblemList= ()=>import('@/views/admin/exam/PaperProblemList')
 const TrainingCategory= ()=>import('@/views/admin/training/Category')
 const DiscussionList= ()=>import('@/views/admin/discussion/Discussion')
 const adminRoutes= [
@@ -96,6 +100,7 @@ const adminRoutes= [
           component: ProblemImportAndExport,
           meta: { title:'Export Import Problem'},
         },
+          //训练
         {
           path: 'training/create',
           name: 'admin-create-training',
@@ -127,6 +132,13 @@ const adminRoutes= [
           meta: { title:'Admin Category'}
         },
         {
+          path: 'paper/:paperId/problems',
+          name: 'admin-paper-problem-list',
+          component: PaperProblemList,
+          meta: { title:'Paper Problem List'}
+        },
+        //比赛
+        {
           path: 'contest/create',
           name: 'admin-create-contest',
           component: Contest,
@@ -156,6 +168,12 @@ const adminRoutes= [
           component: ProblemList,
           meta: { title:'Contest Problem List'}
         },
+        // {
+        //   path: 'contest/:contestId/problems',
+        //   name: 'admin-paper-problem-list',
+        //   component: ProblemList,
+        //   meta: { title:'Contest Problem List'}
+        // },
         {
           path: 'contest/:contestId/problem/create',
           name: 'admin-create-contest-problem',
@@ -167,6 +185,43 @@ const adminRoutes= [
           name: 'admin-edit-contest-problem',
           component: Problem,
           meta: { title:'Edit Problem'}
+        },
+          //考试
+        {
+          path: 'exam/create',
+          name: 'admin-create-exam',
+          component: Exam,
+          meta: { title:'Create Exam'},
+        },
+        {
+          path: 'exam',
+          name: 'admin-exam-list',
+          component: ExamList,
+          meta: { title:'Exam List'}
+        },
+        {
+          path: 'exam/:examId/edit',
+          name: 'admin-edit-exam',
+          component: Exam,
+          meta: { title:'Edit Exam'}
+        },
+        {
+          path: 'exam/:examId/announcement',
+          name: 'admin-exam-announcement',
+          component: Announcement,
+          meta: { title:'Exam Announcement'}
+        },
+        {
+          path: 'exam/:examId/paperList',
+          name: 'admin-exam-paperList',
+          component: PaperList,
+          meta: { title:'Exam PaperList'}
+        },
+        {
+          path: 'exam/:examId/problems',
+          name: 'admin-exam-paper-list',
+          component: ProblemList,
+          meta: { title:'Exam Paper List'}
         },
         {
           path: 'discussion',

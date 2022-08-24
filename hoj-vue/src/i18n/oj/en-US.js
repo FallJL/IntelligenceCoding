@@ -4,6 +4,7 @@ export const m = {
   NavBar_Problem: 'Problem',
   NavBar_Training: 'Training',
   NavBar_Contest: 'Contest',
+  NavBar_Exam: 'Exam',
   NavBar_Status: 'Status',
   NavBar_Rank: 'Rank',
   NavBar_ACM_Rank: 'ACM Rank',
@@ -205,7 +206,7 @@ export const m = {
   No_tag: 'No tag',
   Statistic: 'Statistic',
   Solutions: 'Solutions',
-  Problem_Discussion: 'Discussion',
+  // Problem_Discussion: 'Discussion',
   Description: 'Description',
   Input: 'Input',
   Output: 'Output',
@@ -324,19 +325,22 @@ export const m = {
   Go_Home: 'Go Home',
   Back: 'Back',
 
-  // /views/oj/contest/ContestList.vue
+  // /views/oj/contest/ExamList.vue
   Rule: 'Rule',
   Running: 'Running',
   Scheduled: 'Scheduled',
   Ended: 'Ended',
-  No_contest: 'No contest',
+  No_exam: 'No exam',
+  Exams: 'Exams',
   Contests: 'Contests',
+  No_contest: 'No contest',
   Public: 'Public',
   Private: 'Private',
   Protected: 'Protected',
   Public_Tips: 'Public - Any one can see and submit.',
   Protected_Tips: 'Protected - Any one can see, but only users knowing contest password can submit.',
   Private_Tips: 'Private - Only users knowing contest password can see and submit.',
+  Exam_Outside_ScoreBoard: 'OutSide Exam ScoreBoard',
   Contest_Outside_ScoreBoard: 'OutSide Contest ScoreBoard',
 
   // /views/oj/contest/ContestDetail.vue
@@ -357,8 +361,14 @@ export const m = {
   Register_contest_successfully: 'Register contest successfully',
   Please_check_the_contest_announcement_for_details: 'Please check the contest announcement for details',
 
-  // /views/oj/contest/children/ACMContestRank.vue
+  // /views/oj/exam/ExamDetail.vue
+  ExamOverview: 'OverView',
+  Register_exam_successfully: 'Register contest successfully',
+  Please_check_the_exam_announcement_for_details: 'Please check the exam announcement for details',
+
+  // /views/oj/contest/children/ACMPaperRank.vue
   Contest_Rank: 'Contest Rank',
+  Exam_Rank: 'Exam Rank',
   Menu: 'Menu',
   Chart: 'Chart',
   Table: 'Table',
@@ -370,6 +380,7 @@ export const m = {
   Top_10_Teams: 'Top 10 Teams',
   save_as_image: 'save as image',
   Contest_Rank_Seq: 'Rank',
+  Exam_Rank_Seq: 'Rank',
   Star_User: 'Star User',
   Unfollow: 'Unfollow',
   Top_And_Follow: 'Top And Follow',
@@ -382,7 +393,7 @@ export const m = {
   Check_It: 'Check It',
   Accepted: 'Accepted',
 
-  // /views/oj/contest/children/ContestPrint.vue
+  // /views/oj/contest/children/PaperPrint.vue
   Print_Title: 'Contest Text Printing',
   Print_tips: 'Please put the text to be printed into the content box, and then submit. Note: please do not submit maliciously!',
   Content: 'Content',
@@ -390,19 +401,21 @@ export const m = {
   The_number_of_content_cannot_be_less_than_50: 'The number of words cannot be less than 50',
   Success_submit_tips: 'Submitted successfully! Please wait patiently for the staff to print!',
 
-  // /views/oj/contest/children/ContestAdminPrint.vue
+  // /views/oj/contest/children/PaperAdminPrint.vue
   Download: 'Download',
   Printed: 'Printed',
   Not_Printed: 'Not Printed',
 
-  // /views/oj/contest/children/ContestRejudgeAdmin.vue
+  // /views/oj/contest/children/PaperRejudgeAdmin.vue
   Contest_Rejudge: 'Contest Rejudge',
+  Exam_Rejudge: 'Exam Rejudge',
   ID: 'ID',
   Contest_Rejudge_Tips: 'Are you sure you want to rejudge all submissions of the questions?',
+  Exam_Rejudge_Tips: 'Are you sure you want to rejudge all submissions of the questions?',
   Rejudge_All: 'Rejudge All',
   Rejudge_successfully: 'Rejudge successfully',
 
-  // /views/oj/contest/children/OIContestRank.vue
+  // /views/oj/contest/children/OIPaperRank.vue
   Total_Score: 'Total Score',
   Based_on_The_Highest_Score_Submitted_For_Each_Problem: 'Based on the highest score submitted for each problem',
   Based_on_The_Recent_Score_Submitted_Of_Each_Problem: 'Based on the recent score submitted of each problem',
@@ -563,7 +576,7 @@ export const m = {
   Apply_Group: 'Apply to Join',
   Apply_Successfully: 'Apply Successfully',
   Exit_Group: 'Exit Group',
-  Applying:'Applying...',
+  // Applying:'Applying...',
   Reject_Application:'Rejected',
   Exit_Group_Tips: 'Are you sure you want to exit the group? After exiting, you will no longer be able to view group resources!',
   Exit_Successfully: 'Exit Successfully',

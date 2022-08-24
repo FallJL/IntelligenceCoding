@@ -4,6 +4,7 @@ export const m = {
   NavBar_Problem: '题目',
   NavBar_Training: '训练',
   NavBar_Contest: '比赛',
+  NavBar_Exam: '考试',
   NavBar_Status: '评测',
   NavBar_Rank: '排名',
   NavBar_ACM_Rank: 'ACM 排名',
@@ -326,20 +327,28 @@ export const m = {
   Go_Home: '返回主页',
   Back: '返回',
 
-  // /views/oj/contest/ContestList.vue
+  // /views/oj/contest/ExamList.vue
   Rule: '规则',
   Running: '进行中',
   Scheduled: '筹备中',
   Ended: '已结束',
+  No_exam: '暂无考试',
   No_contest: '暂无比赛',
+  Exams: '考试',
   Contests: '比赛',
-  Public: '公开赛',
-  Private: '私有赛',
-  Protected: '保护赛',
-  Public_Tips: '公开赛 - 每个用户都可查看与提交',
-  Protected_Tips: '保护赛 - 每个用户都可查看，但是提交需要密码',
-  Private_Tips: '私有赛 - 用户需要密码才可查看与提交',
-  Contest_Outside_ScoreBoard: '赛外榜单',
+  Public: '公开',
+  Private: '私有',
+  Protected: '保护',
+  Public_Tips: '公开 - 每个用户都可查看与提交',
+  Protected_Tips: '保护 - 每个用户都可查看，但是提交需要密码',
+  Private_Tips: '私有 - 用户需要密码才可查看与提交',
+  Exam_Outside_ScoreBoard: '外榜单',
+  Contest_Outside_ScoreBoard: '外榜单',
+
+  //views/admin/PaperList.vue
+  Paper_List: '试卷列表',
+  View_Paper_Problem_List: '',
+  Papers: '试卷',
 
   // /views/oj/contest/ContestDetail.vue
   StartAt: '开始时间',
@@ -359,8 +368,14 @@ export const m = {
   Register_contest_successfully: '比赛报名成功',
   Please_check_the_contest_announcement_for_details: '具体内容请查看比赛公告',
 
-  // /views/oj/contest/children/ACMContestRank.vue
+  // /views/oj/exam/ExamDetail.vue
+  ExamOverview: '考试简介',
+  Register_exam_successfully: '考试报名成功',
+  Please_check_the_exam_announcement_for_details: '具体内容请查看考试公告',
+
+  // /views/oj/contest/children/ACMPaperRank.vue
   Contest_Rank: '比赛排名',
+  Exam_Rank: '考试排名',
   Menu: '菜单',
   Chart: '图表',
   Table: '表格',
@@ -372,6 +387,7 @@ export const m = {
   Top_10_Teams: 'Top 10 Teams',
   save_as_image: '保存成图片',
   Contest_Rank_Seq: '排名',
+  Exam_Rank_Seq: '排名',
   Star_User: '打星用户',
   Unfollow: '取消关注',
   Top_And_Follow: '置顶关注',
@@ -384,7 +400,7 @@ export const m = {
   Check_It: '检查',
   Accepted: 'Accepted',
 
-  // /views/oj/contest/children/ContestPrint.vue
+  // /views/oj/contest/children/PaperPrint.vue
   Print_Title: '比赛文本打印',
   Print_tips: '请将需要打印的文本放入内容框内提交。注意：请不要恶意提交！',
   Content: '内容',
@@ -392,19 +408,21 @@ export const m = {
   The_number_of_content_cannot_be_less_than_50: '内容字符数不能低于50！',
   Success_submit_tips: '提交成功！请耐心等待工作人员打印！',
 
-  // /views/oj/contest/children/ContestAdminPrint.vue
+  // /views/oj/contest/children/PaperAdminPrint.vue
   Download: '下载',
   Printed: '已打印',
   Not_Printed: '未打印',
 
-  // /views/oj/contest/children/ContestRejudgeAdmin.vue
+  // /views/oj/contest/children/PaperRejudgeAdmin.vue
   Contest_Rejudge: '比赛重新测评',
+  Exam_Rejudge: '考试重新测评',
   ID: 'ID',
   Rejudge_All: '重测',
   Contest_Rejudge_Tips: '您确定重测所有提交记录?',
+  Exam_Rejudge_Tips: '您确定重测所有提交记录?',
   Rejudge_successfully: '重测成功',
 
-  // /views/oj/contest/children/OIContestRank.vue
+  // /views/oj/contest/children/OIPaperRank.vue
   Total_Score: '总分',
   Based_on_The_Highest_Score_Submitted_For_Each_Problem: '以每题提交的最高得分计算',
   Based_on_The_Recent_Score_Submitted_Of_Each_Problem: '以每题提交的最近得分计算',

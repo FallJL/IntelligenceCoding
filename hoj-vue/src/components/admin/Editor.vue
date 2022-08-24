@@ -94,6 +94,58 @@ export default {
       this.toolbars.imagelink = true;
     }
   },
+  components: {
+    coma: {
+      render: function (h) {
+        return h("dict-tag", {
+          attrs: {
+            options: this.options,
+            value: this.value,
+          },
+        });
+      },
+      props: ["options", "value"],
+    },
+    comb: {
+      data() {
+        return { usageType: "" };
+      },
+      props: ["options", "value"],
+      mounted() {
+        this.usageType = this.value;
+      },
+      render: function (h) {
+        return h(
+            "el-select",
+            {
+              attrs: {
+                placeholder: "请选择",
+                value: this.usageType,
+              },
+              props: ["value"],
+              on: {
+                change: (value) => {
+                  this.usageType = value;
+                  this.$emit("update-usagetype", value);
+                },
+              },
+            },
+            [
+              this.options.map((item) => {
+                let { label, value } = item;
+                return h("el-option", {
+                  props: {
+                    label,
+                    value: parseInt(value),
+                    key: value,
+                  },
+                });
+              }),
+            ]
+        );
+      },
+    },
+  },
   methods: {
     // 将图片上传到服务器，返回地址替换到md中
     $imgAdd(pos, $file) {
