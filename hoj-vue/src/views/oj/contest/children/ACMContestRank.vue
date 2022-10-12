@@ -38,7 +38,7 @@
                 ></el-switch>
               </p>
             </template>
-            <template>
+            <template v-if="isContestAdmin">
               <el-button type="primary" size="small" @click="downloadRankCSV">{{
                 $t('m.Download_as_CSV')
               }}</el-button>
@@ -57,8 +57,10 @@
         auto-resize
         size="medium"
         align="center"
+        ref="ACMContestRank"
         :data="dataRank"
         :cell-class-name="cellClassName"
+        @cell-click="getUserProblemSubmission"
       >
         <vxe-table-column
           field="rank"
@@ -220,9 +222,10 @@
           min-width="74"
           v-for="problem in contestProblems"
           :key="problem.displayId"
+          :field="problem.displayId"
         >
           <template v-slot:header>
-            <span style="vertical-align: top;" v-if="problem.color">
+            <span class="contest-rank-balloon" v-if="problem.color">
               <svg
                 t="1633685184463"
                 class="icon"
@@ -241,6 +244,16 @@
               </svg>
             </span>
             <span>
+              <a
+                @click="getContestProblemById(problem.displayId)"
+                class="emphasis"
+                style="color:#495060;"
+              >
+                {{ problem.displayId }}
+              </a>
+            </span>
+            <br />
+            <span>
               <el-tooltip effect="dark" placement="top">
                 <div slot="content">
                   {{ problem.displayId + '. ' + problem.displayTitle }}
@@ -249,23 +262,15 @@
                   <br />
                   {{ 'Rejected: ' + (problem.total - problem.ac) }}
                 </div>
-                <div>
-                  <span>
-                    <a
-                      @click="getContestProblemById(problem.displayId)"
-                      class="emphasis"
-                      style="color:#495060;"
-                      >{{ problem.displayId }}({{ problem.ac }}/{{
-                        problem.total
-                      }})
-                    </a>
-                  </span>
-                </div>
+                <span>({{ problem.ac }}/{{ problem.total }}) </span>
               </el-tooltip>
             </span>
           </template>
           <template v-slot="{ row }">
-            <span v-if="row.submissionInfo[problem.displayId]">
+            <span
+              v-if="row.submissionInfo[problem.displayId]"
+              class="submission-hover"
+            >
               <el-tooltip effect="dark" placement="top">
                 <div slot="content">
                   {{ row.submissionInfo[problem.displayId].specificTime }}
@@ -452,6 +457,20 @@ export default {
         },
       });
     },
+    getUserProblemSubmission({ row, column }) {
+      if (
+        column.property != 'rank' &&
+        column.property != 'rating' &&
+        column.property != 'totalTime' &&
+        column.property != 'username' &&
+        column.property != 'realname'
+      ) {
+        this.$router.push({
+          name: 'ContestSubmissionList',
+          query: { username: row.username, problemID: column.property },
+        });
+      }
+    },
     cellClassName({ row, rowIndex, column, columnIndex }) {
       if (row.username == this.userInfo.username) {
         if (
@@ -607,6 +626,7 @@ export default {
   },
 };
 </script>
+
 <style scoped>
 .echarts {
   margin: 20px auto;

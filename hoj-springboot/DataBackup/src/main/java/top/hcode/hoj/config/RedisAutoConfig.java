@@ -34,9 +34,9 @@ public class RedisAutoConfig {
         @Value("${spring.redis.password:hoj123456}")
         private String password;
 
-        @Value("${spring.redis.jedis.pool.max-active:200}")
+        @Value("${spring.redis.jedis.pool.max-active:-1}")
         private Integer maxActive;
-        @Value("${spring.redis.jedis.pool.max-idle:50}")
+        @Value("${spring.redis.jedis.pool.max-idle:300}")
         private Integer maxIdle;
         @Value("${spring.redis.jedis.pool.max-wait:-1}")
         private Long maxWait;

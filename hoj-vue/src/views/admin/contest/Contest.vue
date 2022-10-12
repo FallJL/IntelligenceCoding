@@ -49,12 +49,16 @@
               <el-input v-model="durationText" disabled> </el-input>
             </el-form-item>
           </el-col>
+        </el-row>
+
+        <el-row>
           <el-col :md="8" :xs="24">
-            <el-form-item :label="$t('m.Contest_Rule_Type')">
+            <el-form-item :label="$t('m.Contest_Rule_Type')" required>
               <el-radio
                 class="radio"
                 v-model="contest.type"
                 :label="0"
+                @change="setSealRankTimeDefaultValue"
                 :disabled="disableRuleType"
                 >ACM</el-radio
               >
@@ -63,13 +67,36 @@
                 v-model="contest.type"
                 :label="1"
                 :disabled="disableRuleType"
+                @change="setSealRankTimeDefaultValue"
                 >OI</el-radio
               >
             </el-form-item>
           </el-col>
 
+          <el-col :md="8" :xs="24">
+            <el-form-item
+              :label="$t('m.OI_Rank_Score_Type')"
+              v-show="contest.type == 1"
+            >
+              <el-radio
+                class="radio"
+                v-model="contest.oiRankScoreType"
+                label="Recent"
+                >{{ $t('m.OI_Rank_Score_Type_Recent') }}</el-radio
+              >
+              <el-radio
+                class="radio"
+                v-model="contest.oiRankScoreType"
+                label="Highest"
+                >{{ $t('m.OI_Rank_Score_Type_Highest') }}</el-radio
+              >
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <el-row>
           <el-col :md="8" :xs="24" v-if="contest.sealRank">
-            <el-form-item :label="$t('m.Seal_Time_Rank')">
+            <el-form-item :label="$t('m.Seal_Time_Rank')" required>
               <el-switch
                 v-model="contest.sealRank"
                 active-color="#13ce66"
@@ -79,12 +106,13 @@
             </el-form-item>
           </el-col>
 
-          <el-col :md="16" :xs="24" v-else>
-            <el-form-item :label="$t('m.Real_Time_Rank')">
+          <el-col :md="24" :xs="24" v-else>
+            <el-form-item :label="$t('m.Real_Time_Rank')" required>
               <el-switch
                 v-model="contest.sealRank"
                 active-color="#13ce66"
                 inactive-color=""
+                @change="setSealRankTimeDefaultValue"
               >
               </el-switch>
             </el-form-item>
@@ -119,7 +147,7 @@
             <el-form-item
               :label="$t('m.Auto_Real_Rank')"
               required
-              v-if="contest.sealRank"
+              v-show="contest.sealRank"
             >
               <el-switch
                 v-model="contest.autoRealRank"
@@ -129,7 +157,9 @@
               </el-switch>
             </el-form-item>
           </el-col>
+        </el-row>
 
+        <el-row>
           <el-col :md="8" :xs="24">
             <el-form-item :label="$t('m.Contest_Outside_ScoreBoard')" required>
               <el-switch
@@ -151,7 +181,9 @@
               </el-switch>
             </el-form-item>
           </el-col>
+        </el-row>
 
+        <el-row>
           <el-col :span="24">
             <el-form-item :label="$t('m.Rank_Show_Name')" required>
               <el-radio-group v-model="contest.rankShowName">
@@ -331,7 +363,7 @@ export default {
       title: 'Create Contest',
       disableRuleType: false,
       durationText: '', // 比赛时长文本表示
-      seal_rank_time: 0, // 当开启封榜模式，即实时榜单关闭时，可选择前半小时，前一小时，全程封榜,默认半小时1800s
+      seal_rank_time: 2, // 当开启封榜模式，即实时榜单关闭时，可选择前半小时，前一小时，全程封榜,默认全程封榜
       contest: {
         title: '',
         description: '',
@@ -340,7 +372,7 @@ export default {
         duration: 0,
         type: 0,
         pwd: '',
-        sealRank: true,
+        sealRank: false,
         sealRankTime: '', //封榜时间
         autoRealRank: true,
         auth: 0,
@@ -349,6 +381,7 @@ export default {
         openAccountLimit: false,
         accountLimitRule: '',
         starAccount: [],
+        oiRankScoreType: 'Recent',
       },
       formRule: {
         prefix: '',
@@ -576,6 +609,22 @@ export default {
         this.contest.starAccount.map((item) => item.name).indexOf(username),
         1
       );
+    },
+
+    setSealRankTimeDefaultValue() {
+      if (this.contest.sealRank == true) {
+        if (this.contest.type == 0) {
+          // ACM比赛开启封榜 默认为一小时,如果比赛时长小于一小时，则默认为全程
+          if (this.contest.duration < 3600) {
+            this.seal_rank_time = 2;
+          } else {
+            this.seal_rank_time = 1;
+          }
+        } else {
+          // OI比赛开启封榜 默认全程
+          this.seal_rank_time = 2;
+        }
+      }
     },
   },
 };

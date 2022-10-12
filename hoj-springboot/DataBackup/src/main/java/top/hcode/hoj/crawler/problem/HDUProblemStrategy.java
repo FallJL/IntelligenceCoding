@@ -16,7 +16,7 @@ import top.hcode.hoj.utils.JsoupUtils;
  */
 public class HDUProblemStrategy extends ProblemStrategy {
     public static final String JUDGE_NAME = "HDU";
-    public static final String HOST = "https://acm.dingbacode.com";
+    public static final String HOST = "http://acm.hdu.edu.cn";
     public static final String PROBLEM_URL = "/showproblem.php?pid=%s";
 
     /**
@@ -55,6 +55,7 @@ public class HDUProblemStrategy extends ProblemStrategy {
                 .setAuthor(author)
                 .setOpenCaseResult(false)
                 .setIsRemoveEndBlank(false)
+                .setIsGroup(false)
                 .setDifficulty(1); // 默认为简单
 
         return new RemoteProblemInfo()

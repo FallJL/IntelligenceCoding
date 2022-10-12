@@ -3,6 +3,8 @@ import Vuex from 'vuex'
 import user from '@/store/user'
 import contest from "@/store/contest"
 import training from "@/store/training"
+import group from "@/store/group"
+import exam from "@/store/exam"
 import api from '@/common/api'
 import i18n from '@/i18n'
 import storage from '@/common/storage'
@@ -15,10 +17,10 @@ const rootState = {
   },
   websiteConfig:{
     recordName:'© 2020-2021',
-    projectName:'HOJ',
+    projectName:'IC',
     shortName:'OJ',
     recordUrl:'#',
-    projectUrl:'#'
+    projectUrl:'https://www.github.com/HimitZH'
   },
   registerTimeOut: 60,
   resetTimeOut: 90,
@@ -124,7 +126,9 @@ export default new Vuex.Store({
   modules: {
     user,
     contest,
-    training
+    training,
+    group,
+    exam
   },
   state: rootState,
   getters: rootGetters,

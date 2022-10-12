@@ -36,7 +36,7 @@
         <vxe-table-column
           field="username"
           :title="$t('m.User')"
-          min-width="150"
+          min-width="200"
           show-overflow
           align="left"
         >
@@ -54,6 +54,11 @@
               style="color:#2d8cf0;"
               >{{ row.username }}</a
             >
+            <span style="margin-left:2px" v-if="row.titleName">
+              <el-tag effect="dark" size="small" :color="row.titleColor">
+                {{ row.titleName }}
+              </el-tag>
+            </span>
           </template>
         </vxe-table-column>
         <vxe-table-column

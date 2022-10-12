@@ -6,11 +6,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.stereotype.Component;
+import top.hcode.hoj.dao.JudgeEntityService;
+import top.hcode.hoj.judge.JudgeContext;
 import top.hcode.hoj.pojo.entity.judge.Judge;
 import top.hcode.hoj.remoteJudge.entity.RemoteJudgeDTO;
 import top.hcode.hoj.remoteJudge.task.RemoteJudgeStrategy;
-import top.hcode.hoj.service.impl.JudgeServiceImpl;
-import top.hcode.hoj.service.impl.RemoteJudgeServiceImpl;
+import top.hcode.hoj.service.RemoteJudgeService;
 import top.hcode.hoj.util.Constants;
 
 @Component
@@ -19,10 +20,13 @@ import top.hcode.hoj.util.Constants;
 public class RemoteJudgeToSubmit {
 
     @Autowired
-    private JudgeServiceImpl judgeService;
+    private JudgeEntityService judgeEntityService;
 
     @Autowired
-    private RemoteJudgeServiceImpl remoteJudgeService;
+    private RemoteJudgeService remoteJudgeService;
+
+    @Autowired
+    private JudgeContext judgeContext;
 
 
     @Value("${hoj-judge-server.name}")
@@ -43,7 +47,7 @@ public class RemoteJudgeToSubmit {
 
         Long submitId = remoteJudgeDTO.getSubmitId();
         // 提交失败 前端手动按按钮再次提交 修改状态 STATUS_SUBMITTED_FAILED
-        if (submitId == null ||submitId == -1L) {
+        if (submitId == null || submitId == -1L) {
             // 将使用的账号放回对应列表
             log.error("[{}] Submit Failed! Begin to return the account to other task!", remoteJudgeDTO.getOj());
             remoteJudgeService.changeAccountStatus(remoteJudgeDTO.getOj(),
@@ -60,20 +64,21 @@ public class RemoteJudgeToSubmit {
             judgeUpdateWrapper.set("status", Constants.Judge.STATUS_SUBMITTED_FAILED.getStatus())
                     .set("error_message", errLog)
                     .eq("submit_id", remoteJudgeDTO.getJudgeId());
-            judgeService.update(judgeUpdateWrapper);
+            judgeEntityService.update(judgeUpdateWrapper);
             // 更新其它表
-            judgeService.updateOtherTable(remoteJudgeDTO.getSubmitId(),
+            judgeContext.updateOtherTable(remoteJudgeDTO.getSubmitId(),
                     Constants.Judge.STATUS_SYSTEM_ERROR.getStatus(),
                     remoteJudgeDTO.getCid(),
                     remoteJudgeDTO.getUid(),
                     remoteJudgeDTO.getPid(),
+                    remoteJudgeDTO.getGid(),
                     null,
                     null);
             return false;
         }
 
         // 提交成功顺便更新状态为-->STATUS_PENDING 判题中...
-        judgeService.updateById(new Judge()
+        judgeEntityService.updateById(new Judge()
                 .setSubmitId(remoteJudgeDTO.getJudgeId())
                 .setStatus(Constants.Judge.STATUS_PENDING.getStatus())
                 .setVjudgeSubmitId(submitId)

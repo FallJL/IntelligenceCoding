@@ -1,24 +1,24 @@
 <template>
   <div>
-    <div class="intr-center">
-      <paper-card type="server">
-        <h1 class="text-darken">HOJ</h1>
-        <h1>
-          <a href="https://gitee.com/himitzh0730/hoj" target="_blank"
-            >Hcode Online Judge</a
-          >
-        </h1>
-        <p>
-          {{ $t('m.Leader_BackEnd_FrontEnd_Engineer') }} / Himit_ZH
-          <a href="https://github.com/HimitZH" class="icon" target="_blank"
-            ><i class="fa fa-github"></i>
-          </a>
-        </p>
-        <p class="teal-text">
-          <i class="el-icon-circle-check"></i> {{ $t('m.Open_Source') }}
-        </p>
-      </paper-card>
-    </div>
+<!--    <div class="intr-center">-->
+<!--      <paper-card type="server">-->
+<!--        <h1 class="text-darken">HOJ</h1>-->
+<!--        <h1>-->
+<!--          <a href="https://gitee.com/himitzh0730/hoj" target="_blank"-->
+<!--            >Hcode Online Judge</a-->
+<!--          >-->
+<!--        </h1>-->
+<!--        <p>-->
+<!--          {{ $t('m.Leader_BackEnd_FrontEnd_Engineer') }} / Himit_ZH-->
+<!--          <a href="https://github.com/HimitZH" class="icon" target="_blank"-->
+<!--            ><i class="fa fa-github"></i>-->
+<!--          </a>-->
+<!--        </p>-->
+<!--        <p class="teal-text">-->
+<!--          <i class="el-icon-circle-check"></i> {{ $t('m.Open_Source') }}-->
+<!--        </p>-->
+<!--      </paper-card>-->
+<!--    </div>-->
     <el-row :gutter="20">
       <el-col :xs="24" :md="12">
         <paper-card type="server">

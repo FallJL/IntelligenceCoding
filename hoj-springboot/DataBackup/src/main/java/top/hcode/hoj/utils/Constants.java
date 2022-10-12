@@ -124,7 +124,12 @@ public class Constants {
         RECORD_NOT_AC_NOT_PENALTY(0, "未AC通过不罚时"),
         RECORD_AC(1, "AC通过"),
 
-        OI_CONTEST_RANK_CACHE(null,"oi_contest_rank_cache");
+        OI_CONTEST_RANK_CACHE(null,"oi_contest_rank_cache"),
+
+        CONTEST_RANK_CAL_RESULT_CACHE(null,"contest_rank_cal_result_cache"),
+
+        OI_RANK_RECENT_SCORE(null,"Recent"),
+        OI_RANK_HIGHEST_SCORE(null,"Highest");
 
         private final Integer code;
         private final String name;
@@ -160,9 +165,12 @@ public class Constants {
         ACM_RANK_CACHE("acm_rank_cache"),
         OI_RANK_CACHE("oi_rank_cache"),
 
+        SUPER_ADMIN_UID_LIST_CACHE("super_admin_uid_list_case"),
+
         SUBMIT_NON_CONTEST_LOCK("submit_non_contest_lock:"),
         SUBMIT_CONTEST_LOCK("submit_contest_lock:"),
         DISCUSSION_ADD_NUM_LOCK("discussion_add_num_lock:"),
+        GROUP_ADD_NUM_LOCK("group_add_num_lock"),
         CONTEST_ADD_PRINT_LOCK("contest_add_print_lock:"),
 
         REMOTE_JUDGE_CF_ACCOUNT_NUM("remote_judge_cf_account:");
@@ -187,6 +195,8 @@ public class Constants {
 
 
         USER_AVATAR_FOLDER("/hoj/file/avatar"),
+
+        GROUP_AVATAR_FOLDER("/hoj/file/avatar/group"),
 
         HOME_CAROUSEL_FOLDER("/hoj/file/carousel"),
 

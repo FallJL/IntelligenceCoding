@@ -190,7 +190,7 @@
           </el-col>
 
           <el-col :md="12" :xs="24">
-            <el-form-item :label="$t('m.Tags')" required>
+            <el-form-item :label="$t('m.Tags')">
               <el-tag
                 v-for="tag in problemTags"
                 closable
@@ -670,6 +670,7 @@ export default {
           trigger: 'blur',
         },
       },
+      backPath: '',
       loadingCompile: false,
       mode: '', // 该题目是编辑或者创建
       contest: {},
@@ -891,6 +892,7 @@ export default {
     init() {
       if (this.mode === 'edit') {
         this.pid = this.$route.params.problemId;
+        this.backPath = this.$route.query.back;
         this.title = this.$i18n.t('m.Edit_Problem');
         let funcName = {
           'admin-edit-problem': 'admin_getProblem',
@@ -1179,7 +1181,7 @@ export default {
           this.loadingCompile = false;
           this.problem.spjCompileOk = true;
           this.error.spj = '';
-          myMessage.success(res.data.msg);
+          myMessage.success(this.$i18n.t('m.Compiled_Successfully'));
         },
         (err) => {
           this.loadingCompile = false;
@@ -1332,12 +1334,13 @@ export default {
           }
         }
       }
-      if (!this.problemTags.length) {
-        this.error.tags =
-          this.$i18n.t('m.Tags') + ' ' + this.$i18n.t('m.is_required');
-        myMessage.error(this.error.tags);
-        return;
-      }
+      // 运行题目标签为空
+      // if (!this.problemTags.length) {
+      //   this.error.tags =
+      //     this.$i18n.t('m.Tags') + ' ' + this.$i18n.t('m.is_required');
+      //   myMessage.error(this.error.tags);
+      //   return;
+      // }
       let isChangeModeCode =
         this.spjRecord.spjLanguage != this.problem.spjLanguage ||
         this.spjRecord.spjCode != this.problem.spjCode;
@@ -1390,13 +1393,16 @@ export default {
         ojName = this.problem.problemId.split('-')[0];
       }
 
-      let problemTagList = Object.assign([], this.problemTags);
-      for (let i = 0; i < problemTagList.length; i++) {
-        //避免后台插入违反唯一性
-        for (let tag2 of this.allTags) {
-          if (problemTagList[i].name == tag2.name && tag2.oj == ojName) {
-            problemTagList[i] = tag2;
-            break;
+      let problemTagList = [];
+      if(this.problemTags.length>0){
+        problemTagList = Object.assign([], this.problemTags);
+        for (let i = 0; i < problemTagList.length; i++) {
+          //避免后台插入违反唯一性
+          for (let tag2 of this.allTags) {
+            if (problemTagList[i].name == tag2.name && tag2.oj == ojName) {
+              problemTagList[i] = tag2;
+              break;
+            }
           }
         }
       }
@@ -1490,7 +1496,11 @@ export default {
             });
           } else {
             myMessage.success('success');
-            this.$router.push({ name: 'admin-problem-list' });
+            if (this.backPath) {
+              this.$router.push({ path: this.backPath });
+            } else {
+              this.$router.push({ name: 'admin-problem-list' });
+            }
           }
         })
         .catch(() => {});

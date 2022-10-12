@@ -27,11 +27,13 @@ CREATE TABLE `announcement` (
   `content` longtext,
   `uid` varchar(255) DEFAULT NULL,
   `status` int(11) DEFAULT '0' COMMENT '0可见，1不可见',
+  `gid` bigint(20) unsigned DEFAULT NULL,
   `gmt_create` datetime DEFAULT CURRENT_TIMESTAMP,
   `gmt_modified` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `uid` (`uid`),
-  CONSTRAINT `announcement_ibfk_1` FOREIGN KEY (`uid`) REFERENCES `user_info` (`uuid`) ON DELETE CASCADE ON UPDATE CASCADE
+  CONSTRAINT `announcement_ibfk_1` FOREIGN KEY (`uid`) REFERENCES `user_info` (`uuid`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `announcement_ibfk_2` FOREIGN KEY (`gid`) REFERENCES `group` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 
 /*Table structure for table `auth` */
@@ -151,11 +153,15 @@ CREATE TABLE `contest` (
   `rank_show_name` varchar(20) DEFAULT 'username' COMMENT '排行榜显示（username、nickname、realname）',
   `open_rank` tinyint(1) DEFAULT '0' COMMENT '是否开放比赛榜单',
   `star_account` mediumtext COMMENT '打星用户列表',
+  `oi_rank_score_type` varchar(255) DEFAULT 'Recent' COMMENT 'oi排行榜得分方式，Recent、Highest',
+  `is_group` tinyint(1) DEFAULT '0',
+  `gid` bigint(20) unsigned DEFAULT NULL,
   `gmt_create` datetime DEFAULT CURRENT_TIMESTAMP,
   `gmt_modified` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`,`uid`),
   KEY `uid` (`uid`),
-  CONSTRAINT `contest_ibfk_1` FOREIGN KEY (`uid`) REFERENCES `user_info` (`uuid`) ON DELETE CASCADE ON UPDATE CASCADE
+  CONSTRAINT `contest_ibfk_1` FOREIGN KEY (`uid`) REFERENCES `user_info` (`uuid`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `contest_ibfk_2` FOREIGN KEY (`gid`) REFERENCES `group` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=1000 DEFAULT CHARSET=utf8;
 
 /*Table structure for table `contest_announcement` */
@@ -325,6 +331,7 @@ CREATE TABLE `discussion` (
   `top_priority` tinyint(1) DEFAULT '0' COMMENT '优先级，是否置顶',
   `comment_num` int(11) DEFAULT '0' COMMENT '评论数量',
   `status` int(1) DEFAULT '0' COMMENT '是否封禁该讨论',
+  `gid` bigint(20) unsigned DEFAULT NULL,
   `gmt_create` datetime DEFAULT CURRENT_TIMESTAMP,
   `gmt_modified` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
@@ -335,7 +342,8 @@ CREATE TABLE `discussion` (
   CONSTRAINT `discussion_ibfk_1` FOREIGN KEY (`uid`) REFERENCES `user_info` (`uuid`) ON DELETE NO ACTION ON UPDATE CASCADE,
   CONSTRAINT `discussion_ibfk_2` FOREIGN KEY (`category_id`) REFERENCES `category` (`id`) ON DELETE NO ACTION ON UPDATE CASCADE,
   CONSTRAINT `discussion_ibfk_4` FOREIGN KEY (`avatar`) REFERENCES `user_info` (`avatar`) ON DELETE NO ACTION ON UPDATE CASCADE,
-  CONSTRAINT `discussion_ibfk_6` FOREIGN KEY (`pid`) REFERENCES `problem` (`problem_id`) ON DELETE CASCADE ON UPDATE CASCADE
+  CONSTRAINT `discussion_ibfk_6` FOREIGN KEY (`pid`) REFERENCES `problem` (`problem_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `discussion_ibfk_3` FOREIGN KEY (`gid`) REFERENCES `group` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 
 /*Table structure for table `discussion_like` */
@@ -387,11 +395,13 @@ CREATE TABLE `file` (
   `file_path` varchar(255) DEFAULT NULL COMMENT '文件绝对路径',
   `type` varchar(255) DEFAULT NULL COMMENT '文件所属类型，例如avatar',
   `delete` tinyint(1) DEFAULT '0' COMMENT '是否删除',
+  `gid` bigint(20) unsigned DEFAULT NULL,
   `gmt_create` datetime DEFAULT CURRENT_TIMESTAMP,
   `gmt_modified` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `uid` (`uid`),
-  CONSTRAINT `file_ibfk_1` FOREIGN KEY (`uid`) REFERENCES `user_info` (`uuid`) ON DELETE SET NULL ON UPDATE CASCADE
+  CONSTRAINT `file_ibfk_1` FOREIGN KEY (`uid`) REFERENCES `user_info` (`uuid`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `file_ibfk_2` FOREIGN KEY (`gid`) REFERENCES `group` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 
 /*Table structure for table `judge` */
@@ -413,7 +423,8 @@ CREATE TABLE `judge` (
   `score` int(11) DEFAULT NULL COMMENT 'IO判题则不为空',
   `length` int(11) DEFAULT NULL COMMENT '代码长度',
   `code` longtext NOT NULL COMMENT '代码',
-  `language` varchar(30) DEFAULT NULL COMMENT '代码语言',
+  `language` varchar(255) DEFAULT NULL COMMENT '代码语言',
+  `gid` bigint(20) unsigned DEFAULT NULL COMMENT '团队id，不为团队内提交则为null',
   `cid` bigint(20) unsigned NOT NULL DEFAULT '0' COMMENT '比赛id，非比赛题目默认为0',
   `cpid` bigint(20) unsigned DEFAULT '0' COMMENT '比赛中题目排序id，非比赛题目默认为0',
   `judger` varchar(20) DEFAULT NULL COMMENT '判题机ip',
@@ -431,7 +442,8 @@ CREATE TABLE `judge` (
   KEY `username` (`username`),
   CONSTRAINT `judge_ibfk_1` FOREIGN KEY (`pid`) REFERENCES `problem` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `judge_ibfk_2` FOREIGN KEY (`uid`) REFERENCES `user_info` (`uuid`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `judge_ibfk_3` FOREIGN KEY (`username`) REFERENCES `user_info` (`username`) ON DELETE CASCADE ON UPDATE CASCADE
+  CONSTRAINT `judge_ibfk_3` FOREIGN KEY (`username`) REFERENCES `user_info` (`username`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `judge_ibfk_4` FOREIGN KEY (`gid`) REFERENCES `group` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 
 /*Table structure for table `judge_case` */
@@ -529,19 +541,26 @@ CREATE TABLE `problem` (
   `auth` int(11) DEFAULT '1' COMMENT '默认为1公开，2为私有，3为比赛题目',
   `io_score` int(11) DEFAULT '100' COMMENT '当该题目为io题目时的分数',
   `code_share` tinyint(1) DEFAULT '1' COMMENT '该题目对应的相关提交代码，用户是否可用分享',
-  `spj_code` longtext COMMENT '特判程序代码 空代表非特判',
-  `spj_language` varchar(255) DEFAULT NULL COMMENT '特判程序的语言',
+  `judge_mode` varchar(255) DEFAULT 'default' COMMENT '题目评测模式,default、spj、interactive',
+  `user_extra_file` mediumtext DEFAULT NULL COMMENT '题目评测时用户程序的额外文件 json key:name value:content',
+  `judge_extra_file` mediumtext DEFAULT NULL COMMENT '题目评测时交互或特殊程序的额外文件 json key:name value:content',
+  `spj_code` longtext COMMENT '特判程序或交互程序代码',
+  `spj_language` varchar(255) DEFAULT NULL COMMENT '特判程序或交互程序代码的语言',
   `is_remove_end_blank` tinyint(1) DEFAULT '1' COMMENT '是否默认去除用户代码的文末空格',
   `open_case_result` tinyint(1) DEFAULT '1' COMMENT '是否默认开启该题目的测试样例结果查看',
   `is_upload_case` tinyint(1) DEFAULT '1' COMMENT '题目测试数据是否是上传文件的',
   `case_version` varchar(40) DEFAULT '0' COMMENT '题目测试数据的版本号',
   `modified_user` varchar(255) DEFAULT NULL COMMENT '修改题目的管理员用户名',
+  `is_group` tinyint(1) DEFAULT '0',
+  `gid` bigint(20) unsigned DEFAULT NULL,
+  `apply_public_progress` int(11) DEFAULT NULL COMMENT '申请公开的进度：null为未申请，1为申请中，2为申请通过，3为申请拒绝',
   `gmt_create` datetime DEFAULT CURRENT_TIMESTAMP,
   `gmt_modified` datetime DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `author` (`author`),
   KEY `problem_id` (`problem_id`),
-  CONSTRAINT `problem_ibfk_1` FOREIGN KEY (`author`) REFERENCES `user_info` (`username`) ON DELETE NO ACTION ON UPDATE CASCADE
+  CONSTRAINT `problem_ibfk_1` FOREIGN KEY (`author`) REFERENCES `user_info` (`username`) ON DELETE NO ACTION ON UPDATE CASCADE,
+  CONSTRAINT `problem_ibfk_2` FOREIGN KEY (`gid`) REFERENCES `group` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=1000 DEFAULT CHARSET=utf8;
 
 /*Table structure for table `problem_case` */
@@ -680,10 +699,12 @@ CREATE TABLE `tag` (
   `name` varchar(255) NOT NULL COMMENT '标签名字',
   `color` varchar(10) DEFAULT NULL COMMENT '标签颜色',
   `oj` varchar(255) DEFAULT 'ME' COMMENT '标签所属oj',
+  `gid` bigint(20) unsigned DEFAULT NULL,
   `gmt_create` datetime DEFAULT CURRENT_TIMESTAMP,
   `gmt_modified` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `name` (`name`,`oj`)
+  UNIQUE KEY `name` (`name`,`oj`, `gid`),
+  CONSTRAINT `tag_ibfk_1` FOREIGN KEY (`gid`) REFERENCES `group` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 
 /*Table structure for table `user_acproblem` */
@@ -862,9 +883,12 @@ CREATE TABLE `training` (
   `private_pwd` varchar(255) DEFAULT NULL COMMENT '训练题单权限为Private时的密码',
   `rank` int DEFAULT '0' COMMENT '编号，升序',
   `status` tinyint(1) DEFAULT '1' COMMENT '是否可用',
+  `is_group` tinyint(1) DEFAULT '0',
+  `gid` bigint(20) unsigned DEFAULT NULL,
   `gmt_create` datetime DEFAULT CURRENT_TIMESTAMP,
   `gmt_modified` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  CONSTRAINT `training_ibfk_1` FOREIGN KEY (`gid`) REFERENCES `group` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*Table structure for table `training_category` */
@@ -875,9 +899,11 @@ CREATE TABLE `training_category` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(255) DEFAULT NULL,
   `color` varchar(255) DEFAULT NULL,
+  `gid` bigint(20) unsigned DEFAULT NULL,
   `gmt_create` datetime DEFAULT CURRENT_TIMESTAMP,
   `gmt_modified` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  CONSTRAINT `training_category_ibfk_1` FOREIGN KEY (`gid`) REFERENCES `group` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*Table structure for table `training_problem` */
@@ -959,6 +985,51 @@ CREATE TABLE `mapping_training_category` (
   KEY `cid` (`cid`),
   CONSTRAINT `mapping_training_category_ibfk_1` FOREIGN KEY (`tid`) REFERENCES `training` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `mapping_training_category_ibfk_2` FOREIGN KEY (`cid`) REFERENCES `training_category` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+/*Table structure for table `group` */
+
+DROP TABLE IF EXISTS `group`;
+
+CREATE TABLE `group` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `avatar` varchar(255) DEFAULT NULL COMMENT '头像地址',
+  `name` varchar(25) DEFAULT NULL COMMENT '团队名称',
+  `short_name` varchar(10) DEFAULT NULL COMMENT '团队简称，创建题目时题号自动添加的前缀',
+  `brief` varchar(50) COMMENT '团队简介',
+  `description` longtext COMMENT '团队介绍',
+  `owner` varchar(255) NOT NULL COMMENT '团队拥有者用户名',
+  `uid` varchar(32) NOT NULL COMMENT '团队拥有者用户id',
+  `auth` int(11) NOT NULL COMMENT '0为Public，1为Protected，2为Private',
+  `visible` tinyint(1) DEFAULT '1' COMMENT '是否可见',
+  `status` tinyint(1) DEFAULT '0' COMMENT '是否封禁',
+  `code` varchar(6) DEFAULT NULL COMMENT '邀请码',
+  `gmt_create` datetime DEFAULT CURRENT_TIMESTAMP,
+  `gmt_modified` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `NAME_UNIQUE` (`name`),
+  UNIQUE KEY `short_name` (`short_name`),
+  CONSTRAINT `group_ibfk_1` FOREIGN KEY (`uid`) REFERENCES `user_info` (`uuid`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=1000 DEFAULT CHARSET=utf8;
+
+/*Table structure for table `group_member` */
+
+DROP TABLE IF EXISTS `group_member`;
+
+CREATE TABLE `group_member` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `gid` bigint unsigned NOT NULL COMMENT '团队id',
+  `uid` varchar(32) NOT NULL COMMENT '用户id',
+  `auth` int(11) DEFAULT '1' COMMENT '1未审批，2拒绝，3普通成员，4团队管理员，5团队拥有者',
+  `reason` varchar(100) DEFAULT NULL COMMENT '申请理由',
+  `gmt_create` datetime DEFAULT CURRENT_TIMESTAMP,
+  `gmt_modified` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `gid_uid_unique` (`gid`, `uid`),
+  KEY `gid` (`gid`),
+  KEY `uid` (`uid`),
+  CONSTRAINT `group_member_ibfk_1` FOREIGN KEY (`gid`) REFERENCES `group` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `group_member_ibfk_2` FOREIGN KEY (`uid`) REFERENCES `user_info` (`uuid`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
@@ -1045,7 +1116,7 @@ delete from `user_info`;
 
 /*Data for the table `auth` */
 
-insert  into `auth`(`id`,`name`,`permission`,`status`,`gmt_create`,`gmt_modified`) values (1,'problem','problem_admin',0,'2020-10-25 00:17:17','2021-05-15 06:51:23'),(2,'submit','submit',0,'2020-10-25 00:17:22','2021-05-15 06:41:59'),(3,'contest','contest_admin',0,'2020-10-25 00:17:33','2021-05-15 06:51:28'),(4,'rejudge','rejudge',0,'2020-10-25 00:17:49','2021-05-15 06:50:55'),(5,'announcement','announcement_admin',0,'2021-05-15 06:54:28','2021-05-15 06:54:31'),(6,'user','user_admin',0,'2021-05-15 06:54:30','2021-05-15 06:55:04'),(7,'system_info','system_info_admin',0,'2021-05-15 06:57:34','2021-05-15 06:57:41'),(8,'dicussion','discussion_add',0,'2021-05-15 06:57:36','2021-05-15 07:50:45'),(9,'dicussion','discussion_del',0,'2021-05-15 07:01:02','2021-05-15 07:51:31'),(10,'dicussion','discussion_edit',0,'2021-05-15 07:02:15','2021-05-15 07:51:34'),(11,'comment','comment_add',0,'2021-05-15 07:03:48','2021-05-15 07:03:48'),(12,'reply','reply_add',0,'2021-05-15 07:04:55','2021-05-15 07:04:55');
+insert  into `auth`(`id`,`name`,`permission`,`status`,`gmt_create`,`gmt_modified`) values (1,'problem','problem_admin',0,'2020-10-25 00:17:17','2021-05-15 06:51:23'),(2,'submit','submit',0,'2020-10-25 00:17:22','2021-05-15 06:41:59'),(3,'contest','contest_admin',0,'2020-10-25 00:17:33','2021-05-15 06:51:28'),(4,'rejudge','rejudge',0,'2020-10-25 00:17:49','2021-05-15 06:50:55'),(5,'announcement','announcement_admin',0,'2021-05-15 06:54:28','2021-05-15 06:54:31'),(6,'user','user_admin',0,'2021-05-15 06:54:30','2021-05-15 06:55:04'),(7,'system_info','system_info_admin',0,'2021-05-15 06:57:34','2021-05-15 06:57:41'),(8,'dicussion','discussion_add',0,'2021-05-15 06:57:36','2021-05-15 07:50:45'),(9,'dicussion','discussion_del',0,'2021-05-15 07:01:02','2021-05-15 07:51:31'),(10,'dicussion','discussion_edit',0,'2021-05-15 07:02:15','2021-05-15 07:51:34'),(11,'comment','comment_add',0,'2021-05-15 07:03:48','2021-05-15 07:03:48'),(12,'reply','reply_add',0,'2021-05-15 07:04:55','2021-05-15 07:04:55'),(13,'group','group_add',0,'2022-03-11 13:36:55','2022-03-11 13:36:55'),(14,'group','group_del',0,'2022-03-11 13:36:55','2022-03-11 13:36:55');
 
 /*Data for the table `category` */
 
@@ -1053,7 +1124,7 @@ insert  into `category`(`id`,`name`,`gmt_create`,`gmt_modified`) values (1,'闲�
 
 /*Data for the table `language` */
 
-insert  into `language`(`id`,`content_type`,`description`,`name`,`compile_command`,`template`,`code_template`,`is_spj`,`oj`,`gmt_create`,`gmt_modified`) values (1,'text/x-csrc','GCC 7.5.0','C','/usr/bin/gcc -DONLINE_JUDGE -w -fmax-errors=3 -std=c11 {src_path} -lm -o {exe_path}','#include <stdio.h>\r\nint add(int a, int b) {\r\n    return a+b;\r\n}\r\nint main() {\r\n    printf(\"%d\", add(1, 2));    \r\n    return 0;\r\n}','//PREPEND BEGIN\r\n#include <stdio.h>\r\n//PREPEND END\r\n\r\n//TEMPLATE BEGIN\r\nint add(int a, int b) {\r\n  // Please fill this blank\r\n  return ___________;\r\n}\r\n//TEMPLATE END\r\n\r\n//APPEND BEGIN\r\nint main() {\r\n  printf(\"%d\", add(1, 2));\r\n  return 0;\r\n}\r\n//APPEND END',1,'ME','2020-12-12 23:11:44','2021-06-14 21:40:28'),(2,'text/x-csrc','GCC 7.5.0','C With O2','/usr/bin/gcc -DONLINE_JUDGE -O2 -w -fmax-errors=3 -std=c11 {src_path} -lm -o {exe_path}','#include <stdio.h>\r\nint add(int a, int b) {\r\n    return a+b;\r\n}\r\nint main() {\r\n    printf(\"%d\", add(1, 2));    \r\n    return 0;\r\n}','//PREPEND BEGIN\r\n#include <stdio.h>\r\n//PREPEND END\r\n\r\n//TEMPLATE BEGIN\r\nint add(int a, int b) {\r\n  // Please fill this blank\r\n  return ___________;\r\n}\r\n//TEMPLATE END\r\n\r\n//APPEND BEGIN\r\nint main() {\r\n  printf(\"%d\", add(1, 2));\r\n  return 0;\r\n}\r\n//APPEND END',0,'ME','2021-06-14 21:05:57','2021-06-14 21:20:08'),(3,'text/x-c++src','G++ 7.5.0','C++','/usr/bin/g++ -DONLINE_JUDGE -w -fmax-errors=3 -std=c++14 {src_path} -lm -o {exe_path}','#include <iostream>\r\nint add(int a, int b) {\r\n    return a+b;\r\n}\r\nint main() {\r\n    std::cout << add(1, 2);\r\n    return 0;\r\n}','//PREPEND BEGIN\r\n#include <iostream>\r\nusing namespace std;\r\n//PREPEND END\r\n\r\n//TEMPLATE BEGIN\r\nint add(int a, int b) {\r\n  // Please fill this blank\r\n  return ___________;\r\n}\r\n//TEMPLATE END\r\n\r\n//APPEND BEGIN\r\nint main() {\r\n  cout << add(1, 2);\r\n  return 0;\r\n}\r\n//APPEND END',1,'ME','2020-12-12 23:12:44','2021-06-14 21:40:36'),(4,'text/x-c++src','G++ 7.5.0','C++ With O2','/usr/bin/g++ -DONLINE_JUDGE -O2 -w -fmax-errors=3 -std=c++14 {src_path} -lm -o {exe_path}','#include <iostream>\r\nint add(int a, int b) {\r\n    return a+b;\r\n}\r\nint main() {\r\n    std::cout << add(1, 2);\r\n    return 0;\r\n}','//PREPEND BEGIN\r\n#include <iostream>\r\nusing namespace std;\r\n//PREPEND END\r\n\r\n//TEMPLATE BEGIN\r\nint add(int a, int b) {\r\n  // Please fill this blank\r\n  return ___________;\r\n}\r\n//TEMPLATE END\r\n\r\n//APPEND BEGIN\r\nint main() {\r\n  cout << add(1, 2);\r\n  return 0;\r\n}\r\n//APPEND END',0,'ME','2021-06-14 21:09:35','2021-06-14 21:20:19'),(5,'text/x-java','OpenJDK 1.8','Java','/usr/bin/javac {src_path} -d {exe_dir} -encoding UTF8','import java.util.Scanner;\r\npublic class Main{\r\n    public static void main(String[] args){\r\n        Scanner in=new Scanner(System.in);\r\n        int a=in.nextInt();\r\n        int b=in.nextInt();\r\n        System.out.println((a+b));\r\n    }\r\n}','//PREPEND BEGIN\r\nimport java.util.Scanner;\r\n//PREPEND END\r\n\r\npublic class Main{\r\n    //TEMPLATE BEGIN\r\n    public static Integer add(int a,int b){\r\n        return _______;\r\n    }\r\n    //TEMPLATE END\r\n\r\n    //APPEND BEGIN\r\n    public static void main(String[] args){\r\n        System.out.println(add(a,b));\r\n    }\r\n    //APPEND END\r\n}\r\n',0,'ME','2020-12-12 23:12:51','2021-06-14 21:19:52'),(6,'text/x-python','Python 3.6.9','Python3','/usr/bin/python3 -m py_compile {src_path}','a, b = map(int, input().split())\r\nprint(a + b)','//PREPEND BEGIN\r\n//PREPEND END\r\n\r\n//TEMPLATE BEGIN\r\ndef add(a, b):\r\n    return a + b\r\n//TEMPLATE END\r\n\r\n\r\nif __name__ == \'__main__\':  \r\n    //APPEND BEGIN\r\n    a, b = 1, 1\r\n    print(add(a, b))\r\n    //APPEND END',0,'ME','2020-12-12 23:14:23','2021-06-14 21:19:50'),(7,'text/x-python','Python 2.7.17','Python2','/usr/bin/python -m py_compile {src_path}','a, b = map(int, raw_input().split())\r\nprint a+b','//PREPEND BEGIN\r\n//PREPEND END\r\n\r\n//TEMPLATE BEGIN\r\ndef add(a, b):\r\n    return a + b\r\n//TEMPLATE END\r\n\r\n\r\nif __name__ == \'__main__\':  \r\n    //APPEND BEGIN\r\n    a, b = 1, 1\r\n    print add(a, b)\r\n    //APPEND END',0,'ME','2021-01-26 11:11:44','2021-06-14 21:19:45'),(8,'text/x-go','Golang 1.16','Golang','/usr/bin/go build -o {exe_path} {src_path}','package main\r\nimport \"fmt\"\r\n\r\nfunc main(){\r\n    var x int\r\n    var y int\r\n    fmt.Scanln(&x,&y)\r\n    fmt.Printf(\"%d\",x+y)  \r\n}\r\n','\r\npackage main\r\n\r\n//PREPEND BEGIN\r\nimport \"fmt\"\r\n//PREPEND END\r\n\r\n\r\n//TEMPLATE BEGIN\r\nfunc add(a,b int)int{\r\n    return ______\r\n}\r\n//TEMPLATE END\r\n\r\n//APPEND BEGIN\r\nfunc main(){\r\n    var x int\r\n    var y int\r\n    fmt.Printf(\"%d\",add(x,y))  \r\n}\r\n//APPEND END\r\n',0,'ME','2021-03-28 23:15:54','2021-06-14 21:20:26'),(9,'text/x-csharp','C# Mono 4.6.2','C#','/usr/bin/mcs -optimize+ -out:{exe_path} {src_path}','using System;\r\nusing System.Collections.Generic;\r\nusing System.Text;\r\nclass Solution\r\n{\r\n   static void Main(string[] args)\r\n   {\r\n       int a = int.Parse(Console.ReadLine());\r\n       int b = int.Parse(Console.ReadLine());\r\n       Console.WriteLine(a+b);\r\n   }\r\n}','//PREPEND BEGIN\r\nusing System;\r\nusing System.Collections.Generic;\r\nusing System.Text;\r\n//PREPEND END\r\n\r\nclass Solution\r\n{\r\n    //TEMPLATE BEGIN\r\n    static int add(int a,int b){\r\n        return _______;\r\n    }\r\n    //TEMPLATE END\r\n\r\n    //APPEND BEGIN\r\n    static void Main(string[] args)\r\n    {\r\n        int a ;\r\n        int b ;\r\n        Console.WriteLine(add(a,b));\r\n    }\r\n    //APPEND END\r\n}',0,'ME','2021-04-13 16:10:03','2021-06-14 21:20:36'),(11,'text/x-csrc','GCC','GCC',NULL,NULL,NULL,0,'HDU','2021-02-18 21:32:34','2021-06-14 21:19:08'),(12,'text/x-c++src','G++','G++',NULL,NULL,NULL,0,'HDU','2021-02-18 21:32:58','2021-06-14 21:19:05'),(13,'text/x-c++src','C++','C++',NULL,NULL,NULL,0,'HDU','2021-02-18 21:33:11','2021-06-14 21:19:03'),(14,'text/x-csrc','C','C',NULL,NULL,NULL,0,'HDU','2021-02-18 21:33:41','2021-06-14 21:18:58'),(15,'text/x-pascal','Pascal','Pascal',NULL,NULL,NULL,0,'HDU','2021-02-18 21:34:33','2021-06-14 21:18:56'),(16,'text/x-csrc','GNU GCC C11 5.1.0','GNU GCC C11 5.1.0',NULL,NULL,NULL,0,'CF','2021-03-03 19:46:24','2021-06-14 21:18:55'),(17,'text/x-c++src','Clang++17 Diagnostics','Clang++17 Diagnostics',NULL,NULL,NULL,0,'CF','2021-03-03 19:46:24','2021-06-14 21:18:54'),(19,'text/x-c++src','GNU G++14 6.4.0','GNU G++14 6.4.0',NULL,NULL,NULL,0,'CF','2021-03-03 19:46:24','2021-06-14 21:18:46'),(20,'text/x-c++src','GNU G++17 7.3.0','GNU G++17 7.3.0',NULL,NULL,NULL,0,'CF','2021-03-03 19:46:24','2021-06-14 21:18:45'),(21,'text/x-c++src','Microsoft Visual C++ 2010','Microsoft Visual C++ 2010',NULL,NULL,NULL,0,'CF','2021-03-03 19:46:24','2021-06-14 21:18:43'),(22,'text/x-c++src','Microsoft Visual C++ 2017','Microsoft Visual C++ 2017',NULL,NULL,NULL,0,'CF','2021-03-03 19:46:24','2021-06-14 21:18:40'),(23,'text/x-csharp','C# Mono 6.8','C# Mono 6.8',NULL,NULL,NULL,0,'CF','2021-03-03 19:46:24','2021-06-14 21:18:36'),(24,'text/x-d','D DMD32 v2.091.0','D DMD32 v2.091.0',NULL,NULL,NULL,0,'CF','2021-03-03 19:46:24','2021-06-14 21:18:34'),(25,'text/x-go','Go 1.15.6','Go 1.15.6',NULL,NULL,NULL,0,'CF','2021-03-03 19:46:24','2021-06-14 21:18:32'),(26,'text/x-haskell','Haskell GHC 8.10.1','Haskell GHC 8.10.1',NULL,NULL,NULL,0,'CF','2021-03-03 19:46:24','2021-06-14 21:18:31'),(27,'text/x-java','Java 1.8.0_241','Java 1.8.0_241',NULL,NULL,NULL,0,'CF','2021-03-03 19:46:24','2021-06-14 21:18:26'),(28,'text/x-java','Kotlin 1.4.0','Kotlin 1.4.0',NULL,NULL,NULL,0,'CF','2021-03-03 19:46:24','2021-06-14 21:18:24'),(29,'text/x-ocaml','OCaml 4.02.1','OCaml 4.02.1',NULL,NULL,NULL,0,'CF','2021-03-03 19:46:24','2021-06-14 21:18:23'),(30,'text/x-pascal','Delphi 7','Delphi 7',NULL,NULL,NULL,0,'CF','2021-03-03 19:46:24','2021-06-14 21:18:20'),(31,'text/x-pascal','Free Pascal 3.0.2','Free Pascal 3.0.2',NULL,NULL,NULL,0,'CF','2021-03-03 19:46:24','2021-06-14 21:18:18'),(32,'text/x-pascal','PascalABC.NET 3.4.2','PascalABC.NET 3.4.2',NULL,NULL,NULL,0,'CF','2021-03-03 19:46:24','2021-06-14 21:18:16'),(33,'text/x-perl','Perl 5.20.1','Perl 5.20.1',NULL,NULL,NULL,0,'CF','2021-03-03 19:46:24','2021-06-14 21:18:15'),(34,'text/x-php','PHP 7.2.13','PHP 7.2.13',NULL,NULL,NULL,0,'CF','2021-03-03 19:46:24','2021-06-14 21:18:12'),(35,'text/x-python','Python 2.7.18','Python 2.7.18',NULL,NULL,NULL,0,'CF','2021-03-03 19:46:24','2021-06-14 21:18:06'),(36,'text/x-python','Python 3.9.1','Python 3.9.1',NULL,NULL,NULL,0,'CF','2021-03-03 19:46:24','2021-06-14 21:18:04'),(37,'text/x-python','PyPy 2.7 (7.3.0)','PyPy 2.7 (7.3.0)',NULL,NULL,NULL,0,'CF','2021-03-03 19:46:24','2021-06-14 21:18:02'),(38,'text/x-python','PyPy 3.7 (7.3.0)','PyPy 3.7 (7.3.0)',NULL,NULL,NULL,0,'CF','2021-03-03 19:46:24','2021-06-14 21:18:00'),(39,'text/x-ruby','Ruby 3.0.0','Ruby 3.0.0',NULL,NULL,NULL,0,'CF','2021-03-03 19:46:24','2021-06-14 21:17:58'),(40,'text/x-rustsrc','Rust 1.49.0','Rust 1.49.0',NULL,NULL,NULL,0,'CF','2021-03-03 19:46:24','2021-06-14 21:17:56'),(41,'text/x-scala','Scala 2.12.8','Scala 2.12.8',NULL,NULL,NULL,0,'CF','2021-03-03 19:46:24','2021-06-14 21:17:54'),(42,'text/javascript','JavaScript V8 4.8.0','JavaScript V8 4.8.0',NULL,NULL,NULL,0,'CF','2021-03-03 19:46:24','2021-06-14 21:17:52'),(43,'text/javascript','Node.js 12.6.3','Node.js 12.6.3',NULL,NULL,NULL,0,'CF','2021-03-03 19:46:24','2021-06-14 21:17:50'),(44,'text/x-csharp','C# 8, .NET Core 3.1','C# 8, .NET Core 3.1',NULL,NULL,NULL,0,'CF','2021-03-25 21:17:39','2021-06-14 21:17:47'),(45,'text/x-java','Java 11.0.6','Java 11.0.6',NULL,NULL,NULL,0,'CF','2021-03-25 21:20:03','2021-06-14 21:17:46'),(46,'text/x-c++src','G++','G++',NULL,NULL,NULL,0,'POJ','2021-06-24 22:50:50','2021-06-24 22:50:50'),(47,'text/x-csrc','GCC','GCC',NULL,NULL,NULL,0,'POJ','2021-06-24 22:51:04','2021-06-24 22:51:12'),(48,'text/x-java','Java','Java',NULL,NULL,NULL,0,'POJ','2021-06-24 22:51:29','2021-06-24 22:51:44'),(49,'text/x-pascal','Pascal','Pascal',NULL,NULL,NULL,0,'POJ','2021-06-24 22:51:50','2021-06-24 22:52:02'),(50,'text/x-c++src','C++','C++',NULL,NULL,NULL,0,'POJ','2021-06-24 22:52:15','2021-06-24 22:52:27'),(51,'text/x-csrc','C','C',NULL,NULL,NULL,0,'POJ','2021-06-24 22:52:38','2021-06-24 22:52:38'),(52,'text/x-fortran','Fortran','Fortran',NULL,NULL,NULL,0,'POJ','2021-06-24 22:55:15','2021-06-24 22:55:15');
+insert  into `language`(`id`,`content_type`,`description`,`name`,`compile_command`,`template`,`code_template`,`is_spj`,`oj`,`gmt_create`,`gmt_modified`) values (1,'text/x-csrc','GCC 7.5.0','C','/usr/bin/gcc -DONLINE_JUDGE -w -fmax-errors=3 -std=c11 {src_path} -lm -o {exe_path}','#include <stdio.h>\r\nint main() {\r\n    int a,b;\r\n    scanf(\"%d %d\",&a,&b);\r\n    printf(\"%d\",a+b);\r\n    return 0;\r\n}','//PREPEND BEGIN\r\n#include <stdio.h>\r\n//PREPEND END\r\n\r\n//TEMPLATE BEGIN\r\nint add(int a, int b) {\r\n  // Please fill this blank\r\n  return ___________;\r\n}\r\n//TEMPLATE END\r\n\r\n//APPEND BEGIN\r\nint main() {\r\n  printf(\"%d\", add(1, 2));\r\n  return 0;\r\n}\r\n//APPEND END',1,'ME','2020-12-12 23:11:44','2021-06-14 21:40:28'),(2,'text/x-csrc','GCC 7.5.0','C With O2','/usr/bin/gcc -DONLINE_JUDGE -O2 -w -fmax-errors=3 -std=c11 {src_path} -lm -o {exe_path}','#include <stdio.h>\r\nint main() {\r\n    int a,b;\r\n    scanf(\"%d %d\",&a,&b);\r\n    printf(\"%d\",a+b);\r\n    return 0;\r\n}','//PREPEND BEGIN\r\n#include <stdio.h>\r\n//PREPEND END\r\n\r\n//TEMPLATE BEGIN\r\nint add(int a, int b) {\r\n  // Please fill this blank\r\n  return ___________;\r\n}\r\n//TEMPLATE END\r\n\r\n//APPEND BEGIN\r\nint main() {\r\n  printf(\"%d\", add(1, 2));\r\n  return 0;\r\n}\r\n//APPEND END',0,'ME','2021-06-14 21:05:57','2021-06-14 21:20:08'),(3,'text/x-c++src','G++ 7.5.0','C++','/usr/bin/g++ -DONLINE_JUDGE -w -fmax-errors=3 -std=c++14 {src_path} -lm -o {exe_path}','#include<iostream>\r\nusing namespace std;\r\nint main()\r\n{\r\n    int a,b;\r\n    cin >> a >> b;\r\n    cout << a + b;\r\n    return 0;\r\n}','//PREPEND BEGIN\r\n#include <iostream>\r\nusing namespace std;\r\n//PREPEND END\r\n\r\n//TEMPLATE BEGIN\r\nint add(int a, int b) {\r\n  // Please fill this blank\r\n  return ___________;\r\n}\r\n//TEMPLATE END\r\n\r\n//APPEND BEGIN\r\nint main() {\r\n  cout << add(1, 2);\r\n  return 0;\r\n}\r\n//APPEND END',1,'ME','2020-12-12 23:12:44','2021-06-14 21:40:36'),(4,'text/x-c++src','G++ 7.5.0','C++ With O2','/usr/bin/g++ -DONLINE_JUDGE -O2 -w -fmax-errors=3 -std=c++14 {src_path} -lm -o {exe_path}','#include<iostream>\r\nusing namespace std;\r\nint main()\r\n{\r\n    int a,b;\r\n    cin >> a >> b;\r\n    cout << a + b;\r\n    return 0;\r\n}','//PREPEND BEGIN\r\n#include <iostream>\r\nusing namespace std;\r\n//PREPEND END\r\n\r\n//TEMPLATE BEGIN\r\nint add(int a, int b) {\r\n  // Please fill this blank\r\n  return ___________;\r\n}\r\n//TEMPLATE END\r\n\r\n//APPEND BEGIN\r\nint main() {\r\n  cout << add(1, 2);\r\n  return 0;\r\n}\r\n//APPEND END',0,'ME','2021-06-14 21:09:35','2021-06-14 21:20:19'),(5,'text/x-java','OpenJDK 1.8','Java','/usr/bin/javac {src_path} -d {exe_dir} -encoding UTF8','import java.util.Scanner;\r\npublic class Main{\r\n    public static void main(String[] args){\r\n        Scanner in=new Scanner(System.in);\r\n        int a=in.nextInt();\r\n        int b=in.nextInt();\r\n        System.out.println((a+b));\r\n    }\r\n}','//PREPEND BEGIN\r\nimport java.util.Scanner;\r\n//PREPEND END\r\n\r\npublic class Main{\r\n    //TEMPLATE BEGIN\r\n    public static Integer add(int a,int b){\r\n        return _______;\r\n    }\r\n    //TEMPLATE END\r\n\r\n    //APPEND BEGIN\r\n    public static void main(String[] args){\r\n        System.out.println(add(a,b));\r\n    }\r\n    //APPEND END\r\n}\r\n',0,'ME','2020-12-12 23:12:51','2021-06-14 21:19:52'),(6,'text/x-python','Python 3.7.5','Python3','/usr/bin/python3 -m py_compile {src_path}','a, b = map(int, input().split())\r\nprint(a + b)','//PREPEND BEGIN\r\n//PREPEND END\r\n\r\n//TEMPLATE BEGIN\r\ndef add(a, b):\r\n    return a + b\r\n//TEMPLATE END\r\n\r\n\r\nif __name__ == \'__main__\':  \r\n    //APPEND BEGIN\r\n    a, b = 1, 1\r\n    print(add(a, b))\r\n    //APPEND END',0,'ME','2020-12-12 23:14:23','2021-06-14 21:19:50'),(7,'text/x-python','Python 2.7.17','Python2','/usr/bin/python -m py_compile {src_path}','a, b = map(int, raw_input().split())\r\nprint a+b','//PREPEND BEGIN\r\n//PREPEND END\r\n\r\n//TEMPLATE BEGIN\r\ndef add(a, b):\r\n    return a + b\r\n//TEMPLATE END\r\n\r\n\r\nif __name__ == \'__main__\':  \r\n    //APPEND BEGIN\r\n    a, b = 1, 1\r\n    print add(a, b)\r\n    //APPEND END',0,'ME','2021-01-26 11:11:44','2021-06-14 21:19:45'),(8,'text/x-go','Golang 1.16','Golang','/usr/bin/go build -o {exe_path} {src_path}','package main\r\nimport \"fmt\"\r\n\r\nfunc main(){\r\n    var x int\r\n    var y int\r\n    fmt.Scanln(&x,&y)\r\n    fmt.Printf(\"%d\",x+y)  \r\n}\r\n','\r\npackage main\r\n\r\n//PREPEND BEGIN\r\nimport \"fmt\"\r\n//PREPEND END\r\n\r\n\r\n//TEMPLATE BEGIN\r\nfunc add(a,b int)int{\r\n    return ______\r\n}\r\n//TEMPLATE END\r\n\r\n//APPEND BEGIN\r\nfunc main(){\r\n    var x int\r\n    var y int\r\n    fmt.Printf(\"%d\",add(x,y))  \r\n}\r\n//APPEND END\r\n',0,'ME','2021-03-28 23:15:54','2021-06-14 21:20:26'),(9,'text/x-csharp','C# Mono 4.6.2','C#','/usr/bin/mcs -optimize+ -out:{exe_path} {src_path}','using System;\r\nusing System.Linq;\r\n\r\nclass Program {\r\n    public static void Main(string[] args) {\r\n        Console.WriteLine(Console.ReadLine().Split().Select(int.Parse).Sum());\r\n    }\r\n}','//PREPEND BEGIN\r\nusing System;\r\nusing System.Collections.Generic;\r\nusing System.Text;\r\n//PREPEND END\r\n\r\nclass Solution\r\n{\r\n    //TEMPLATE BEGIN\r\n    static int add(int a,int b){\r\n        return _______;\r\n    }\r\n    //TEMPLATE END\r\n\r\n    //APPEND BEGIN\r\n    static void Main(string[] args)\r\n    {\r\n        int a ;\r\n        int b ;\r\n        Console.WriteLine(add(a,b));\r\n    }\r\n    //APPEND END\r\n}',0,'ME','2021-04-13 16:10:03','2021-06-14 21:20:36'),(11,'text/x-csrc','GCC','GCC',NULL,NULL,NULL,0,'HDU','2021-02-18 21:32:34','2021-06-14 21:19:08'),(12,'text/x-c++src','G++','G++',NULL,NULL,NULL,0,'HDU','2021-02-18 21:32:58','2021-06-14 21:19:05'),(13,'text/x-c++src','C++','C++',NULL,NULL,NULL,0,'HDU','2021-02-18 21:33:11','2021-06-14 21:19:03'),(14,'text/x-csrc','C','C',NULL,NULL,NULL,0,'HDU','2021-02-18 21:33:41','2021-06-14 21:18:58'),(15,'text/x-pascal','Pascal','Pascal',NULL,NULL,NULL,0,'HDU','2021-02-18 21:34:33','2021-06-14 21:18:56'),(16,'text/x-csrc','GNU GCC C11 5.1.0','GNU GCC C11 5.1.0',NULL,NULL,NULL,0,'CF','2021-03-03 19:46:24','2021-06-14 21:18:55'),(17,'text/x-c++src','Clang++17 Diagnostics','Clang++17 Diagnostics',NULL,NULL,NULL,0,'CF','2021-03-03 19:46:24','2021-06-14 21:18:54'),(19,'text/x-c++src','GNU G++14 6.4.0','GNU G++14 6.4.0',NULL,NULL,NULL,0,'CF','2021-03-03 19:46:24','2021-06-14 21:18:46'),(20,'text/x-c++src','GNU G++17 7.3.0','GNU G++17 7.3.0',NULL,NULL,NULL,0,'CF','2021-03-03 19:46:24','2021-06-14 21:18:45'),(21,'text/x-c++src','GNU G++20 11.2.0 (64 bit, winlibs)','GNU G++20 11.2.0 (64 bit, winlibs)',NULL,NULL,NULL,0,'CF','2021-03-03 19:46:24','2021-06-14 21:18:43'),(22,'text/x-c++src','Microsoft Visual C++ 2017','Microsoft Visual C++ 2017',NULL,NULL,NULL,0,'CF','2021-03-03 19:46:24','2021-06-14 21:18:40'),(23,'text/x-csharp','C# Mono 6.8','C# Mono 6.8',NULL,NULL,NULL,0,'CF','2021-03-03 19:46:24','2021-06-14 21:18:36'),(24,'text/x-d','D DMD32 v2.091.0','D DMD32 v2.091.0',NULL,NULL,NULL,0,'CF','2021-03-03 19:46:24','2021-06-14 21:18:34'),(25,'text/x-go','Go 1.15.6','Go 1.15.6',NULL,NULL,NULL,0,'CF','2021-03-03 19:46:24','2021-06-14 21:18:32'),(26,'text/x-haskell','Haskell GHC 8.10.1','Haskell GHC 8.10.1',NULL,NULL,NULL,0,'CF','2021-03-03 19:46:24','2021-06-14 21:18:31'),(27,'text/x-java','Java 1.8.0_241','Java 1.8.0_241',NULL,NULL,NULL,0,'CF','2021-03-03 19:46:24','2021-06-14 21:18:26'),(28,'text/x-java','Kotlin 1.4.0','Kotlin 1.4.0',NULL,NULL,NULL,0,'CF','2021-03-03 19:46:24','2021-06-14 21:18:24'),(29,'text/x-ocaml','OCaml 4.02.1','OCaml 4.02.1',NULL,NULL,NULL,0,'CF','2021-03-03 19:46:24','2021-06-14 21:18:23'),(30,'text/x-pascal','Delphi 7','Delphi 7',NULL,NULL,NULL,0,'CF','2021-03-03 19:46:24','2021-06-14 21:18:20'),(31,'text/x-pascal','Free Pascal 3.0.2','Free Pascal 3.0.2',NULL,NULL,NULL,0,'CF','2021-03-03 19:46:24','2021-06-14 21:18:18'),(32,'text/x-pascal','PascalABC.NET 3.4.2','PascalABC.NET 3.4.2',NULL,NULL,NULL,0,'CF','2021-03-03 19:46:24','2021-06-14 21:18:16'),(33,'text/x-perl','Perl 5.20.1','Perl 5.20.1',NULL,NULL,NULL,0,'CF','2021-03-03 19:46:24','2021-06-14 21:18:15'),(34,'text/x-php','PHP 7.2.13','PHP 7.2.13',NULL,NULL,NULL,0,'CF','2021-03-03 19:46:24','2021-06-14 21:18:12'),(35,'text/x-python','Python 2.7.18','Python 2.7.18',NULL,NULL,NULL,0,'CF','2021-03-03 19:46:24','2021-06-14 21:18:06'),(36,'text/x-python','Python 3.9.1','Python 3.9.1',NULL,NULL,NULL,0,'CF','2021-03-03 19:46:24','2021-06-14 21:18:04'),(37,'text/x-python','PyPy 2.7 (7.3.0)','PyPy 2.7 (7.3.0)',NULL,NULL,NULL,0,'CF','2021-03-03 19:46:24','2021-06-14 21:18:02'),(38,'text/x-python','PyPy 3.7 (7.3.0)','PyPy 3.7 (7.3.0)',NULL,NULL,NULL,0,'CF','2021-03-03 19:46:24','2021-06-14 21:18:00'),(39,'text/x-ruby','Ruby 3.0.0','Ruby 3.0.0',NULL,NULL,NULL,0,'CF','2021-03-03 19:46:24','2021-06-14 21:17:58'),(40,'text/x-rustsrc','Rust 1.49.0','Rust 1.49.0',NULL,NULL,NULL,0,'CF','2021-03-03 19:46:24','2021-06-14 21:17:56'),(41,'text/x-scala','Scala 2.12.8','Scala 2.12.8',NULL,NULL,NULL,0,'CF','2021-03-03 19:46:24','2021-06-14 21:17:54'),(42,'text/javascript','JavaScript V8 4.8.0','JavaScript V8 4.8.0',NULL,NULL,NULL,0,'CF','2021-03-03 19:46:24','2021-06-14 21:17:52'),(43,'text/javascript','Node.js 12.6.3','Node.js 12.6.3',NULL,NULL,NULL,0,'CF','2021-03-03 19:46:24','2021-06-14 21:17:50'),(44,'text/x-csharp','C# 8, .NET Core 3.1','C# 8, .NET Core 3.1',NULL,NULL,NULL,0,'CF','2021-03-25 21:17:39','2021-06-14 21:17:47'),(45,'text/x-java','Java 11.0.6','Java 11.0.6',NULL,NULL,NULL,0,'CF','2021-03-25 21:20:03','2021-06-14 21:17:46'),(46,'text/x-c++src','G++','G++',NULL,NULL,NULL,0,'POJ','2021-06-24 22:50:50','2021-06-24 22:50:50'),(47,'text/x-csrc','GCC','GCC',NULL,NULL,NULL,0,'POJ','2021-06-24 22:51:04','2021-06-24 22:51:12'),(48,'text/x-java','Java','Java',NULL,NULL,NULL,0,'POJ','2021-06-24 22:51:29','2021-06-24 22:51:44'),(49,'text/x-pascal','Pascal','Pascal',NULL,NULL,NULL,0,'POJ','2021-06-24 22:51:50','2021-06-24 22:52:02'),(50,'text/x-c++src','C++','C++',NULL,NULL,NULL,0,'POJ','2021-06-24 22:52:15','2021-06-24 22:52:27'),(51,'text/x-csrc','C','C',NULL,NULL,NULL,0,'POJ','2021-06-24 22:52:38','2021-06-24 22:52:38'),(52,'text/x-fortran','Fortran','Fortran',NULL,NULL,NULL,0,'POJ','2021-06-24 22:55:15','2021-06-24 22:55:15');
 
 /*Data for the table `role` */
 
@@ -1061,7 +1132,7 @@ insert  into `role`(`id`,`role`,`description`,`status`,`gmt_create`,`gmt_modifie
 
 /*Data for the table `role_auth` */
 
-insert  into `role_auth`(`id`,`auth_id`,`role_id`,`gmt_create`,`gmt_modified`) values (1,1,1000,'2020-10-25 00:18:17','2020-10-25 00:18:17'),(2,2,1000,'2020-10-25 00:18:38','2021-05-15 07:17:35'),(3,3,1000,'2020-10-25 00:18:48','2021-05-15 07:17:44'),(4,4,1000,'2021-05-15 07:17:56','2021-05-15 07:17:56'),(5,5,1000,'2021-05-15 07:18:20','2021-05-15 07:18:20'),(6,6,1000,'2021-05-15 07:18:29','2021-05-15 07:18:29'),(7,7,1000,'2021-05-15 07:18:42','2021-05-15 07:18:42'),(8,8,1000,'2021-05-15 07:18:59','2021-05-15 07:18:59'),(9,9,1000,'2021-05-15 07:19:07','2021-05-15 07:19:07'),(10,10,1000,'2021-05-15 07:19:10','2021-05-15 07:19:10'),(11,11,1000,'2021-05-15 07:19:13','2021-05-15 07:19:13'),(12,12,1000,'2021-05-15 07:19:18','2021-05-15 07:19:30'),(13,1,1001,'2021-05-15 07:19:29','2021-05-15 07:20:02'),(14,2,1001,'2021-05-15 07:20:25','2021-05-15 07:20:25'),(15,3,1001,'2021-05-15 07:20:33','2021-05-15 07:20:33'),(16,8,1001,'2021-05-15 07:21:56','2021-05-15 07:21:56'),(17,9,1001,'2021-05-15 07:22:03','2021-05-15 07:22:03'),(18,10,1001,'2021-05-15 07:22:10','2021-05-15 07:22:10'),(19,11,1001,'2021-05-15 07:22:17','2021-05-15 07:22:17'),(20,12,1001,'2021-05-15 07:22:21','2021-05-15 07:22:21'),(21,2,1002,'2021-05-15 07:22:40','2021-05-15 07:22:40'),(22,8,1002,'2021-05-15 07:23:49','2021-05-15 07:23:49'),(23,9,1002,'2021-05-15 07:24:10','2021-05-15 07:24:10'),(24,10,1002,'2021-05-15 07:24:14','2021-05-15 07:24:14'),(25,11,1002,'2021-05-15 07:24:19','2021-05-15 07:24:19'),(26,12,1002,'2021-05-15 07:24:23','2021-05-15 07:24:23'),(27,8,1003,'2021-05-15 07:32:56','2021-05-15 07:32:56'),(28,9,1003,'2021-05-15 07:33:01','2021-05-15 07:33:01'),(29,10,1003,'2021-05-15 07:33:05','2021-05-15 07:33:05'),(30,11,1003,'2021-05-15 07:33:09','2021-05-15 07:33:09'),(31,12,1003,'2021-05-15 07:33:22','2021-05-15 07:33:22'),(32,2,1004,'2021-05-15 07:33:38','2021-05-15 07:33:38'),(33,9,1004,'2021-05-15 07:34:27','2021-05-15 07:34:27'),(34,10,1004,'2021-05-15 07:34:31','2021-05-15 07:34:31'),(35,11,1004,'2021-05-15 07:34:42','2021-05-15 07:34:42'),(36,12,1004,'2021-05-15 07:34:47','2021-05-15 07:34:47'),(37,2,1005,'2021-05-15 07:35:11','2021-05-15 07:35:11'),(38,9,1005,'2021-05-15 07:35:46','2021-05-15 07:35:46'),(39,10,1005,'2021-05-15 07:36:01','2021-05-15 07:36:01'),(40,9,1006,'2021-05-15 07:40:09','2021-05-15 07:40:09'),(41,10,1006,'2021-05-15 07:40:16','2021-05-15 07:40:16'),(42,11,1006,'2021-05-15 07:40:30','2021-05-15 07:40:30'),(43,12,1006,'2021-05-15 07:40:37','2021-05-15 07:40:37'),(44,9,1007,'2021-05-15 07:40:54','2021-05-15 07:40:54'),(45,10,1007,'2021-05-15 07:41:04','2021-05-15 07:41:04'),(46,1,1008,'2021-06-12 23:16:10','2021-06-12 23:16:10'),(47,2,1008,'2021-06-12 23:16:15','2021-06-12 23:16:15'),(48,3,1008,'2021-06-12 23:16:19','2021-06-12 23:16:19'),(49,8,1008,'2021-06-12 23:16:24','2021-06-12 23:16:24'),(50,9,1008,'2021-06-12 23:16:45','2021-06-12 23:16:45'),(51,10,1008,'2021-06-12 23:16:48','2021-06-12 23:16:48'),(52,11,1008,'2021-06-12 23:16:52','2021-06-12 23:16:52'),(53,12,1008,'2021-06-12 23:16:58','2021-06-12 23:16:58');
+insert  into `role_auth`(`id`,`auth_id`,`role_id`,`gmt_create`,`gmt_modified`) values (1,1,1000,'2020-10-25 00:18:17','2020-10-25 00:18:17'),(2,2,1000,'2020-10-25 00:18:38','2021-05-15 07:17:35'),(3,3,1000,'2020-10-25 00:18:48','2021-05-15 07:17:44'),(4,4,1000,'2021-05-15 07:17:56','2021-05-15 07:17:56'),(5,5,1000,'2021-05-15 07:18:20','2021-05-15 07:18:20'),(6,6,1000,'2021-05-15 07:18:29','2021-05-15 07:18:29'),(7,7,1000,'2021-05-15 07:18:42','2021-05-15 07:18:42'),(8,8,1000,'2021-05-15 07:18:59','2021-05-15 07:18:59'),(9,9,1000,'2021-05-15 07:19:07','2021-05-15 07:19:07'),(10,10,1000,'2021-05-15 07:19:10','2021-05-15 07:19:10'),(11,11,1000,'2021-05-15 07:19:13','2021-05-15 07:19:13'),(12,12,1000,'2021-05-15 07:19:18','2021-05-15 07:19:30'),(13,1,1001,'2021-05-15 07:19:29','2021-05-15 07:20:02'),(14,2,1001,'2021-05-15 07:20:25','2021-05-15 07:20:25'),(15,3,1001,'2021-05-15 07:20:33','2021-05-15 07:20:33'),(16,8,1001,'2021-05-15 07:21:56','2021-05-15 07:21:56'),(17,9,1001,'2021-05-15 07:22:03','2021-05-15 07:22:03'),(18,10,1001,'2021-05-15 07:22:10','2021-05-15 07:22:10'),(19,11,1001,'2021-05-15 07:22:17','2021-05-15 07:22:17'),(20,12,1001,'2021-05-15 07:22:21','2021-05-15 07:22:21'),(21,2,1002,'2021-05-15 07:22:40','2021-05-15 07:22:40'),(22,8,1002,'2021-05-15 07:23:49','2021-05-15 07:23:49'),(23,9,1002,'2021-05-15 07:24:10','2021-05-15 07:24:10'),(24,10,1002,'2021-05-15 07:24:14','2021-05-15 07:24:14'),(25,11,1002,'2021-05-15 07:24:19','2021-05-15 07:24:19'),(26,12,1002,'2021-05-15 07:24:23','2021-05-15 07:24:23'),(27,8,1003,'2021-05-15 07:32:56','2021-05-15 07:32:56'),(28,9,1003,'2021-05-15 07:33:01','2021-05-15 07:33:01'),(29,10,1003,'2021-05-15 07:33:05','2021-05-15 07:33:05'),(30,11,1003,'2021-05-15 07:33:09','2021-05-15 07:33:09'),(31,12,1003,'2021-05-15 07:33:22','2021-05-15 07:33:22'),(32,2,1004,'2021-05-15 07:33:38','2021-05-15 07:33:38'),(33,9,1004,'2021-05-15 07:34:27','2021-05-15 07:34:27'),(34,10,1004,'2021-05-15 07:34:31','2021-05-15 07:34:31'),(35,11,1004,'2021-05-15 07:34:42','2021-05-15 07:34:42'),(36,12,1004,'2021-05-15 07:34:47','2021-05-15 07:34:47'),(37,2,1005,'2021-05-15 07:35:11','2021-05-15 07:35:11'),(38,9,1005,'2021-05-15 07:35:46','2021-05-15 07:35:46'),(39,10,1005,'2021-05-15 07:36:01','2021-05-15 07:36:01'),(40,9,1006,'2021-05-15 07:40:09','2021-05-15 07:40:09'),(41,10,1006,'2021-05-15 07:40:16','2021-05-15 07:40:16'),(42,11,1006,'2021-05-15 07:40:30','2021-05-15 07:40:30'),(43,12,1006,'2021-05-15 07:40:37','2021-05-15 07:40:37'),(44,9,1007,'2021-05-15 07:40:54','2021-05-15 07:40:54'),(45,10,1007,'2021-05-15 07:41:04','2021-05-15 07:41:04'),(46,1,1008,'2021-06-12 23:16:10','2021-06-12 23:16:10'),(47,2,1008,'2021-06-12 23:16:15','2021-06-12 23:16:15'),(48,3,1008,'2021-06-12 23:16:19','2021-06-12 23:16:19'),(49,8,1008,'2021-06-12 23:16:24','2021-06-12 23:16:24'),(50,9,1008,'2021-06-12 23:16:45','2021-06-12 23:16:45'),(51,10,1008,'2021-06-12 23:16:48','2021-06-12 23:16:48'),(52,11,1008,'2021-06-12 23:16:52','2021-06-12 23:16:52'),(53,12,1008,'2021-06-12 23:16:58','2021-06-12 23:16:58'),(54,13,1000,'2021-06-12 23:16:58','2021-06-12 23:16:58'),(55,13,1001,'2021-06-12 23:16:58','2021-06-12 23:16:58'),(56,13,1002,'2021-06-12 23:16:58','2021-06-12 23:16:58'),(57,13,1008,'2021-06-12 23:16:58','2021-06-12 23:16:58'),(58,14,1000,'2021-06-12 23:16:58','2021-06-12 23:16:58'),(59,14,1001,'2021-06-12 23:16:58','2021-06-12 23:16:58'),(60,14,1002,'2021-06-12 23:16:58','2021-06-12 23:16:58'),(61,14,1008,'2021-06-12 23:16:58','2021-06-12 23:16:58');
 
 insert  into `user_info`(`uuid`,`username`,`password`,`gmt_create`,`gmt_modified`) values('1','root','9f09812f6e5165b85e258c48901d4d74',NOW(),NOW());
 

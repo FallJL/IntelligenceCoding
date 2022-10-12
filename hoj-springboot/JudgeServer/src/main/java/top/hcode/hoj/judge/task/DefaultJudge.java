@@ -1,6 +1,5 @@
 package top.hcode.hoj.judge.task;
 
-import cn.hutool.core.io.file.FileWriter;
 import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
 import org.springframework.stereotype.Component;
@@ -13,6 +12,8 @@ import top.hcode.hoj.judge.entity.JudgeDTO;
 import top.hcode.hoj.judge.entity.JudgeGlobalDTO;
 import top.hcode.hoj.judge.entity.SandBoxRes;
 import top.hcode.hoj.util.Constants;
+
+import java.nio.charset.StandardCharsets;
 
 /**
  * @Author: Himit_ZH
@@ -34,7 +35,8 @@ public class DefaultJudge extends AbstractJudge {
                 judgeDTO.getMaxOutputSize(),
                 judgeGlobalDTO.getMaxStack(),
                 runConfig.getExeName(),
-                judgeGlobalDTO.getUserFileId());
+                judgeGlobalDTO.getUserFileId(),
+                judgeGlobalDTO.getUserFileSrc());
     }
 
     @Override
@@ -61,9 +63,9 @@ public class DefaultJudge extends AbstractJudge {
         } else if (sandBoxRes.getExitCode() != 0) {
             result.set("status", Constants.Judge.STATUS_RUNTIME_ERROR.getStatus());
             if (sandBoxRes.getExitCode() < 32) {
-                errMsg.append(String.format("Your program return ExitCode: %s (%s)\n", sandBoxRes.getExitCode(), SandboxRun.signals.get(sandBoxRes.getExitCode())));
+                errMsg.append(String.format("The program return exit status code: %s (%s)\n", sandBoxRes.getExitCode(), SandboxRun.signals.get(sandBoxRes.getExitCode())));
             } else {
-                errMsg.append(String.format("Your program return ExitCode: %s\n", sandBoxRes.getExitCode()));
+                errMsg.append(String.format("The program return exit status code: %s\n", sandBoxRes.getExitCode()));
             }
         } else {
             result.set("status", sandBoxRes.getStatus());
@@ -74,23 +76,16 @@ public class DefaultJudge extends AbstractJudge {
         // ns->ms
         result.set("time", sandBoxRes.getTime());
 
-        if (!StringUtils.isEmpty(sandBoxRes.getStdout())) {
-            // 对于当前测试样例，用户程序的输出对应生成的文件
-            FileWriter stdWriter = new FileWriter(judgeGlobalDTO.getRunDir() + "/" + judgeDTO.getTestCaseId() + ".out");
-            stdWriter.write(sandBoxRes.getStdout());
-        }
-
-        if (!StringUtils.isEmpty(sandBoxRes.getStderr())) {
-            // 对于当前测试样例，用户的错误提示生成对应文件
-            FileWriter errWriter = new FileWriter(judgeGlobalDTO.getRunDir() + "/" + judgeDTO.getTestCaseId() + ".err");
-            errWriter.write(sandBoxRes.getStderr());
-            // 同时记录错误信息
-            errMsg.append(sandBoxRes.getStderr());
-        }
+//        if (!StringUtils.isEmpty(sandBoxRes.getStdout())) {
+//            // 对于当前测试样例，用户程序的输出对应生成的文件
+//            FileWriter stdWriter = new FileWriter(judgeGlobalDTO.getRunDir() + "/" + judgeDTO.getTestCaseId() + ".out");
+//            stdWriter.write(sandBoxRes.getStdout());
+//        }
 
         // 记录该测试点的错误信息
         if (!StringUtils.isEmpty(errMsg.toString())) {
-            result.set("errMsg", errMsg.toString());
+            String str = errMsg.toString();
+            result.set("errMsg", str.substring(0, Math.min(1024 * 1024, str.length())));
         }
 
         if (judgeGlobalDTO.getNeedUserOutputFile()) { // 如果需要获取用户对于该题目的输出
@@ -110,18 +105,18 @@ public class DefaultJudge extends AbstractJudge {
 
         // 如果当前题目选择默认去掉字符串末位空格
         if (isRemoveEOLBlank) {
-            String userOutputMd5 = DigestUtils.md5DigestAsHex(rtrim(userOutput).getBytes());
+            String userOutputMd5 = DigestUtils.md5DigestAsHex(rtrim(userOutput).getBytes(StandardCharsets.UTF_8));
             if (userOutputMd5.equals(testcaseInfo.getStr("EOFStrippedOutputMd5"))) {
                 return Constants.Judge.STATUS_ACCEPTED.getStatus();
             }
         } else { // 不选择默认去掉文末空格 与原数据进行对比
-            String userOutputMd5 = DigestUtils.md5DigestAsHex(userOutput.getBytes());
+            String userOutputMd5 = DigestUtils.md5DigestAsHex(userOutput.getBytes(StandardCharsets.UTF_8));
             if (userOutputMd5.equals(testcaseInfo.getStr("outputMd5"))) {
                 return Constants.Judge.STATUS_ACCEPTED.getStatus();
             }
         }
         // 如果不AC,进行PE判断，否则为WA
-        String userOutputMd5 = DigestUtils.md5DigestAsHex(userOutput.replaceAll("\\s+", "").getBytes());
+        String userOutputMd5 = DigestUtils.md5DigestAsHex(userOutput.replaceAll("\\s+", "").getBytes(StandardCharsets.UTF_8));
         if (userOutputMd5.equals(testcaseInfo.getStr("allStrippedOutputMd5"))) {
             return Constants.Judge.STATUS_PRESENTATION_ERROR.getStatus();
         } else {

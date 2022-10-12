@@ -9,11 +9,18 @@
         text-color="#495060"
       >
         <div class="logo">
-          <el-image
-            style="width: 139px; height: 50px"
-            :src="imgUrl"
-            fit="scale-down"
-          ></el-image>
+          <el-tooltip
+            :content="$t('m.Click_To_Change_Web_Language')"
+            placement="bottom"
+            effect="dark"
+          >
+            <el-image
+              style="width: 139px; height: 50px"
+              :src="imgUrl"
+              fit="scale-down"
+              @click="changeWebLanguage"
+            ></el-image>
+          </el-tooltip>
         </div>
         <el-menu-item index="/home"
           ><i class="el-icon-s-home"></i>{{ $t('m.NavBar_Home') }}</el-menu-item
@@ -29,6 +36,10 @@
         <el-menu-item index="/contest"
           ><i class="el-icon-trophy"></i
           >{{ $t('m.NavBar_Contest') }}</el-menu-item
+        >
+        <el-menu-item index="/exam"
+          ><i class="el-icon-tickets"></i
+          >{{ $t('m.NavBar_Exam') }}</el-menu-item
         >
         <el-menu-item index="/status"
           ><i class="el-icon-s-marketing"></i
@@ -46,9 +57,18 @@
           }}</el-menu-item>
         </el-submenu>
 
+
         <el-menu-item index="/discussion"
           ><i class="el-icon-s-comment"></i
           >{{ $t('m.NavBar_Discussion') }}</el-menu-item
+        >
+
+        <el-menu-item index="/group"
+          ><i
+            class="fa fa-users"
+            style="margin-right: 5px;width: 24px;text-align: center;"
+          ></i
+          >{{ $t('m.NavBar_Group') }}</el-menu-item
         >
 
         <el-submenu index="about">
@@ -62,6 +82,11 @@
             $t('m.NavBar_Developer')
           }}</el-menu-item>
         </el-submenu>
+
+        <el-menu-item index="/externalSearch"
+          ><i class="el-icon-question"></i
+          >{{ $t('m.NavBar_CommonWebsites') }}
+        </el-menu-item>
 
         <template v-if="!isAuthenticated">
           <div class="btn-menu">
@@ -180,9 +205,17 @@
         <mu-button icon slot="left" @click="opendrawer = !opendrawer">
           <i class="el-icon-s-unfold"></i>
         </mu-button>
-        {{
-          websiteConfig.shortName ? websiteConfig.shortName.toUpperCase() : 'OJ'
-        }}
+        <el-tooltip
+            :content="$t('m.Click_To_Change_Web_Language')"
+            placement="bottom"
+            effect="dark"
+          >
+          <span @click="changeWebLanguage">
+          {{
+            websiteConfig.shortName ? websiteConfig.shortName.toUpperCase() : 'OJ'
+          }}
+          </span>
+        </el-tooltip>
         <mu-button
           flat
           slot="right"
@@ -397,6 +430,20 @@
           </mu-list-item>
 
           <mu-list-item
+              button
+              to="/exam"
+              @click="opendrawer = !opendrawer"
+              active-class="mobile-menu-active"
+          >
+            <mu-list-item-action>
+              <mu-icon value=":el-icon-trophy" size="24"></mu-icon>
+            </mu-list-item-action>
+            <mu-list-item-title>{{
+                $t('m.NavBar_Exam')
+              }}</mu-list-item-title>
+          </mu-list-item>
+
+          <mu-list-item
             button
             to="/status"
             @click="opendrawer = !opendrawer"
@@ -468,6 +515,18 @@
 
           <mu-list-item
             button
+            to="/group"
+            @click="opendrawer = !opendrawer"
+            active-class="mobile-menu-active"
+          >
+            <mu-list-item-action>
+              <mu-icon value=":fa fa-users" size="24"></mu-icon>
+            </mu-list-item-action>
+            <mu-list-item-title>{{ $t('m.NavBar_Group') }}</mu-list-item-title>
+          </mu-list-item>
+
+          <mu-list-item
+            button
             :ripple="false"
             nested
             :open="openSideMenu === 'about'"
@@ -509,6 +568,21 @@
               }}</mu-list-item-title>
             </mu-list-item>
           </mu-list-item>
+
+          <mu-list-item
+              button
+              to="/externalSearch"
+              @click="opendrawer = !opendrawer"
+              active-class="mobile-menu-active"
+          >
+            <mu-list-item-action>
+              <mu-icon value=":el-icon-question" size="24"></mu-icon>
+            </mu-list-item-action>
+            <mu-list-item-title>{{
+                $t('m.NavBar_CommonWebsites')
+              }}</mu-list-item-title>
+          </mu-list-item>
+
         </mu-list>
       </mu-drawer>
     </div>
@@ -517,6 +591,7 @@
       width="370px"
       class="dialog"
       :title="title"
+      :close-on-click-modal="false"
     >
       <component :is="modalStatus.mode" v-if="modalVisible"></component>
       <div slot="footer" style="display: none"></div>
@@ -562,7 +637,7 @@ export default {
       openusermenu: false,
       openmsgmenu: false,
       openSideMenu: '',
-      imgUrl: require('@/assets/logo.png'),
+      imgUrl: require('@/assets/intelligencecoding.jpg'),
 
       avatarStyle:
         'display: inline-flex;width: 30px;height: 30px;border-radius: 50%;align-items: center;justify-content: center;text-align: center;user-select: none;',
@@ -619,7 +694,7 @@ export default {
                 sumMsg +
                 '条未读消息，请注意查看！',
               position: 'bottom-right',
-              duration: 30000,
+              duration: 10000,
             });
           } else {
             this.$notify.info({
@@ -631,11 +706,14 @@ export default {
                 sumMsg +
                 ' unread messages. Please check them!',
               position: 'bottom-right',
-              duration: 30000,
+              duration: 10000,
             });
           }
         }
       });
+    },
+    changeWebLanguage() {
+      this.$store.commit('changeWebLanguage', { language: this.webLanguage == 'zh-CN' ? 'en-US' : 'zh-CN' });
     },
   },
   computed: {
@@ -703,7 +781,6 @@ export default {
 <style scoped>
 #header {
   min-width: 300px;
-  position: fixed;
   top: 0;
   left: 0;
   height: auto;
@@ -732,6 +809,7 @@ export default {
 }
 
 .logo {
+  cursor: pointer;
   margin-left: 2%;
   margin-right: 2%;
   float: left;

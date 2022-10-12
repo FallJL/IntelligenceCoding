@@ -101,9 +101,9 @@
               <el-tooltip placement="top">
                 <div slot="content">
                   {{ $t('m.Problem_Score') }}：{{
-                    row.score != null ? row.score : $t('m.Unknown')
+                    row.score != null ? row.score : $t('m.Nothing')
                   }}<br />{{ $t('m.OI_Rank_Score') }}：{{
-                    row.oiRankScore != null ? row.oiRankScore : $t('m.Unknown')
+                    row.oiRankScore != null ? row.oiRankScore : $t('m.Nothing')
                   }}<br />
                   {{
                     $t('m.OI_Rank_Calculation_Rule')
@@ -124,7 +124,10 @@
         </vxe-table-column>
       </vxe-table>
     </el-col>
-    <el-col :span="24" v-if="testCaseResult">
+    <el-col
+      :span="24"
+      v-if="testCaseResult != null && testCaseResult.length > 0"
+    >
       <el-card style="margin-top: 13px;" shadow="hover">
         <div slot="header">
           <span class="panel-title home-title">{{
@@ -142,13 +145,16 @@
           >
             <el-tooltip placement="top">
               <div slot="content">
-                {{ $t('m.Input_File') }}：{{
-                  item.inputData ? item.inputData : $t('m.Unknown')
-                }}<br />{{ $t('m.Output_File') }}：{{
-                  item.outputData ? item.outputData : $t('m.Unknown')
-                }}
-                <br />{{ $t('m.Case_tips') }}：{{
-                  item.userOutput ? item.userOutput : $t('m.Unknown')
+                <template v-if="item.inputData">
+                  {{ $t('m.Input_File') }}：{{ item.inputData }}<br />
+                </template>
+
+                <template v-if="item.outputData">
+                  {{ $t('m.Output_File') }}：{{ item.outputData }}<br />
+                </template>
+
+                {{ $t('m.Case_tips') }}：{{
+                  item.userOutput ? item.userOutput : $t('m.Nothing')
                 }}
               </div>
               <div
@@ -199,7 +205,8 @@
       v-if="
         (submission.code && submission.share && codeShare) ||
           isMeSubmisson ||
-          isAdminRole
+          isAdminRole ||
+          (submission.gid && isGroupRoot)
       "
     >
       <el-col :span="24" style="margin-top: 13px;" v-if="submission.code">
@@ -324,6 +331,14 @@ export default {
             problemID: row.displayPid,
           },
         });
+      } else if (row.gid) {
+        this.$router.push({
+          name: 'GroupProblemDetails',
+          params: {
+            problemID: row.displayPid,
+            groupID: row.gid,
+          },
+        });
       } else {
         this.$router.push({
           name: 'ProblemDetails',
@@ -403,7 +418,11 @@ export default {
       api.updateSubmission(data).then(
         (res) => {
           this.getSubmission();
-          myMessage.success(this.$i18n.t('m.Shared_successfully'));
+          if (shared) {
+            myMessage.success(this.$i18n.t('m.Shared_successfully'));
+          } else {
+            myMessage.success(this.$i18n.t('m.Cancel_Sharing_Successfully'));
+          }
         },
         () => {}
       );
@@ -443,6 +462,9 @@ export default {
     },
     isMeSubmisson() {
       return this.$store.getters.userInfo.uid === this.submission.uid;
+    },
+    isGroupRoot() {
+      return this.$store.getters.isGroupRoot;
     },
   },
 };
