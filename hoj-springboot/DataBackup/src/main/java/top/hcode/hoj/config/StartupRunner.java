@@ -90,13 +90,13 @@ public class StartupRunner implements CommandLineRunner {
     private String judgeToken;
 
     // 邮箱配置
-    @Value("${EMAIL_USERNAME:your_email_username}")
+    @Value("${EMAIL_USERNAME:intelligencecoding@163.com}")
     private String emailUsername;
 
-    @Value("${EMAIL_PASSWORD:your_email_password}")
+    @Value("${EMAIL_PASSWORD:VOMLFFDXTJXOAQLQ}")
     private String emailPassword;
 
-    @Value("${EMAIL_SERVER_HOST:your_email_host}")
+    @Value("${EMAIL_SERVER_HOST:smtp.163.com}")
     private String emailHost;
 
     @Value("${EMAIL_SERVER_PORT:465}")

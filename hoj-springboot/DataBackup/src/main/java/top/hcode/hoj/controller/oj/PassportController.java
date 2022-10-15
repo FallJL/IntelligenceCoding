@@ -50,7 +50,7 @@ public class PassportController {
      */
     @RequestMapping(value = "/get-register-code", method = RequestMethod.GET)
     public CommonResult<RegisterCodeVo> getRegisterCode(@RequestParam(value = "email", required = true) String email) {
-        return passportService.getRegisterCode(email);
+            return passportService.getRegisterCode(email);
     }
 
 
