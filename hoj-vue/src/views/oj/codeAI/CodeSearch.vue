@@ -81,7 +81,7 @@ export default {
   //   );
   // },
   methods: {
-    ...mapActions(['changeDomTitle']),
+    // ...mapActions(['changeDomTitle']),
     init() {
       this.routeName = this.$route.name;
       let query = this.$route.query;
