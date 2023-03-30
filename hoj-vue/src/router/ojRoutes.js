@@ -36,6 +36,7 @@ import PaperRejudgeAdmin from "@/views/oj/exam/children/PaperRejudgeAdmin.vue"
 import DiscussionList from "@/views/oj/discussion/discussionList.vue"
 import Discussion from "@/views/oj/discussion/discussion.vue"
 import CodeSummarization from "@/views/oj/codeAI/CodeSummarization.vue"
+import CodeSearch from "@/views/oj/codeAI/CodeSearch.vue"
 import Introduction from "@/views/oj/about/Introduction.vue"
 import Developer from "@/views/oj/about/Developer.vue"
 import Message from "@/views/oj/message/message.vue"
@@ -486,6 +487,11 @@ const ojRoutes = [
     path: '/codeSummarization',
     meta: {title: 'CodeSummarization'},
     component:CodeSummarization,
+  },
+  {
+    path: '/codeSearch',
+    meta: {title: 'CodeSearch'},
+    component:CodeSearch,
   },
   {
     path: '/introduction',

@@ -80,6 +80,9 @@
           <el-menu-item index="/codeSummarization">{{
             $t('m.NavBar_CodeSummarization')
             }}</el-menu-item>
+            <el-menu-item index="/codeSearch">{{
+            $t('m.NavBar_CodeSearch')
+            }}</el-menu-item>
         </el-submenu>
 
         <el-submenu index="about">
@@ -540,8 +543,8 @@
             button
             :ripple="false"
             nested
-            :open="openSideMenu === 'about'"
-            @toggle-nested="openSideMenu = arguments[0] ? 'about' : ''"
+            :open="openSideMenu === 'codeAI'"
+            @toggle-nested="openSideMenu = arguments[0] ? 'codeAI' : ''"
           >
             <mu-list-item-action>
               <mu-icon value=":el-icon-info" size="24"></mu-icon>
@@ -564,6 +567,18 @@
             >
               <mu-list-item-title>{{
                 $t('m.NavBar_CodeSummarization')
+                }}</mu-list-item-title>
+            </mu-list-item>
+            <mu-list-item
+                    button
+                    :ripple="false"
+                    slot="nested"
+                    to="/codeSearch"
+                    @click="opendrawer = !opendrawer"
+                    active-class="mobile-menu-active"
+            >
+              <mu-list-item-title>{{
+                $t('m.NavBar_CodeSearch')
                 }}</mu-list-item-title>
             </mu-list-item>
 
