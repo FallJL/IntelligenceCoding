@@ -234,6 +234,7 @@ export const m = {
   View_Contest: '查看比赛',
   Are_you_sure_you_want_to_reset_your_code: '您确定要重置代码吗？',
   Are_you_sure_you_want_to_generate_comments: '您确定要生成该代码的注释吗？',
+  Your_Sumbit_is_not_right:'您提交的文件形式不正确',
   Code_can_not_be_empty: '代码不能为空',
   Code_Length_can_not_exceed_65535: '代码的字符长度不能超过65535！',
   Submit_code_successfully: '提交代码成功',
