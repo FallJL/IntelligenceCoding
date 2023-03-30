@@ -257,6 +257,20 @@ const ojApi = {
     })
   },
 
+  // step1: 根据代码生成注释
+  generateSpecialComment (data) {
+    return ajax('/python/submitCodeComment','post',{
+      data
+    })
+  },
+
+  // step2: 根据带有特殊注释的代码生成流程图
+  generateFlowChart (data) {
+    return ajax('/python/submitCodeFC','post',{
+      data
+    })
+  },
+
   // 提交评测模块
   submitCode (data) {
     return ajax('/api/submit-problem-judge', 'post', {

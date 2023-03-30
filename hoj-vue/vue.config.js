@@ -45,6 +45,10 @@ const cdn = {
       "https://cdn.jsdelivr.net/npm/echarts@4.9.0/dist/echarts.min.js",
       "https://cdn.jsdelivr.net/npm/vue-echarts@5.0.0-beta.0/dist/vue-echarts.min.js",
       // "https://unpkg.com/mavon-editor@2.9.1/dist/mavon-editor.js"
+      // 以下3个是在Problem.vue中生成AST结构流程图所需
+      "http://cdnjs.cloudflare.com/ajax/libs/raphael/2.3.0/raphael.min.js",
+      "http://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.0/jquery.min.js",
+      "http://flowchart.js.org/flowchart-latest.js"
   ]
 }
 
@@ -59,6 +63,10 @@ module.exports={
       '/api': {                                //   以'/api'开头的请求会被代理进行转发
         target: 'http://localhost:6688',       //   要发向的后台服务器地址  如果后台服务跑在后台开发人员的机器上，就写成 `http://ip:port` 如 `http:192.168.12.213:8081`   ip为后台服务器的ip
         changeOrigin: true 
+      },
+        '/python': {                                //   以'/python'开头的请求会被代理进行转发
+            target: 'http://localhost:5000',       //   要发向的后台服务器地址  如果后台服务跑在后台开发人员的机器上，就写成 `http://ip:port` 如 `http:192.168.12.213:8081`   ip为后台服务器的ip
+            changeOrigin: true
       }
     },
     disableHostCheck: true,

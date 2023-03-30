@@ -562,6 +562,10 @@
                     >
                   </template>
                 </div>
+
+
+
+
                 <div
                   v-else-if="
                     (!this.contestID ||
@@ -603,7 +607,6 @@
                   >
                 </div>
               </el-col>
-
               <el-col :sm="24" :md="14" :lg="14" style="margin-top:4px;">
                 <template v-if="captchaRequired">
                   <div class="captcha-container">
@@ -629,8 +632,83 @@
                   <span v-if="submitting">{{ $t('m.Submitting') }}</span>
                   <span v-else>{{ $t('m.Submit') }}</span>
                 </el-button>
+                <el-button
+                  type="success"
+                  icon="el-icon-edit-outline"
+                  size="small"
+                  @click.native="generateFlowChart"
+                  class="fl-right"
+                >
+                  <span>{{ $t('m.Generate_FlowChart') }}</span>
+                </el-button>
+                <el-button
+                      type="success"
+                      icon="el-icon-edit-outline"
+                      size="small"
+                      @click.native="generateSpecialComment"
+                      class="fl-right"
+              >
+                <span>{{ $t('m.Generate_Special_Comment') }}</span>
+              </el-button>
+                <el-button
+                      type="success"
+                      icon="el-icon-edit-outline"
+                      size="small"
+                      @click.native="generateStructureFlowchart"
+                      class="fl-right"
+                >
+                <span>{{ $t('m.Generate_Structure_Flowchart') }}</span>
+              </el-button>
+
+              <el-button
+                      type="success"
+                      icon="el-icon-edit-outline"
+                      size="small"
+                      @click.native="optStart"
+                      class="fl-right"
+                >
+                <span>单步执行可视化</span>
+              </el-button>
+              <el-button
+                        type="success"
+                        icon="el-icon-edit-outline"
+                        size="small"
+                        @click.native="Test"
+                        class="fl-right"
+                >
+                <span>测试</span>
+              </el-button>
+
               </el-col>
             </el-row>
+
+            <!--<iframe width="800" height="500" frameborder="10"-->
+                    <!--src="http://localhost:8003/visualize.html#mode=edit">-->
+            <!--</iframe>-->
+            <div style="font-size: 14px;" :visible.sync="optVisible">
+              <iframe width="800" height="500" frameborder="10"
+                      :src=optUrl>
+              </iframe>
+            </div>
+
+            <div style="font-size: 14px;">
+              <span>{{ $t('m.Structure_Flowchart_as_Follows') }}:</span>
+            </div>
+            <div id="AST_graph" class="svg"></div>
+
+            <CommentedCodeMirror
+                    :visible.sync="generateSpecialCommentVisible"
+                    :value.sync="specialCommentedCode"
+                    :languages="problemData.languages"
+                    :language.sync="language"
+                    :theme.sync="theme"
+            ></CommentedCodeMirror>
+
+            <div style="font-size: 14px;" :visible.sync="flowchartVisible">
+              <span>{{ $t('m.Flowchart_as_Follows') }}:</span>
+              <img :src="flowchartUrl" style="width:100%">
+            </div>
+
           </el-card>
         </el-col>
       </el-row>
@@ -648,24 +726,24 @@
     </el-dialog>
 
     <el-dialog :visible.sync="submitPwdVisible" width="340px">
-      <el-form>
-        <el-form-item :label="$t('m.Enter_the_contest_password')" required>
-          <el-input
-            :placeholder="$t('m.Enter_the_contest_password')"
-            v-model="submitPwd"
-            show-password
-          ></el-input>
-        </el-form-item>
-        <el-button
-          type="primary"
-          round
-          style="margin-left:130px"
-          @click="checkContestPassword"
-        >
-          {{ $t('m.Submit') }}
-        </el-button>
-      </el-form>
-    </el-dialog>
+    <el-form>
+      <el-form-item :label="$t('m.Enter_the_contest_password')" required>
+        <el-input
+                :placeholder="$t('m.Enter_the_contest_password')"
+                v-model="submitPwd"
+                show-password
+        ></el-input>
+      </el-form-item>
+      <el-button
+              type="primary"
+              round
+              style="margin-left:130px"
+              @click="checkContestPassword"
+      >
+        {{ $t('m.Submit') }}
+      </el-button>
+    </el-form>
+  </el-dialog>
   </div>
 </template>
 
@@ -687,6 +765,7 @@ import api from '@/common/api';
 import myMessage from '@/common/message';
 import { addCodeBtn } from '@/common/codeblock';
 const CodeMirror = () => import('@/components/oj/common/CodeMirror.vue');
+const CommentedCodeMirror = () => import('@/components/oj/common/CommentedCodeMirror.vue');
 import Pagination from '@/components/oj/common/Pagination';
 // 只显示这些状态的图形占用
 const filtedStatus = ['wa', 'ce', 'ac', 'pa', 'tle', 'mle', 're', 'pe'];
@@ -695,6 +774,7 @@ export default {
   name: 'ProblemDetails',
   components: {
     CodeMirror,
+    CommentedCodeMirror,
     Pagination,
   },
   data() {
@@ -711,8 +791,15 @@ export default {
       trainingID: null,
       submitting: false,
       code: '',
+      optUrl: '',
+      optVisible: false,
+      specialCommentedCode: '',
       language: '',
       isRemote: false,
+
+      generateSpecialCommentVisible: false,
+      flowchartUrl: '',
+      flowchartVisible: false,
 
       theme: 'solarized',
       submissionId: '',
@@ -1233,6 +1320,158 @@ export default {
       );
     },
 
+    ASTcode2graph(astcode){ // 解析AST代码，显示图
+      var chart;
+      $("#AST_graph").html("");  // 所需cdn js 在vue.config.js中配置
+      chart = flowchart.parse(astcode);
+      // this.$message(astcode)
+      chart.drawSVG('AST_graph', {'maxWidth': 500,//ensures the flowcharts fits within a certian width
+        'line-length': 50,
+        'text-margin': 10,
+        'font-size': 14,
+        'font': 'normal',
+        'font-family': 'Helvetica',
+        'font-weight': 'normal',
+        'font-color': 'black',
+        'line-color': 'black',
+        'element-color': 'black',
+        'fill': 'white',
+        'yes-text': 'yes',
+        'no-text': 'no',
+        'arrow-end': 'block',
+        'scale': 1,
+        'symbols': {
+          'start': {
+            'font-color': 'red',
+            'element-color': 'green',
+            'fill': 'yellow'
+          },
+          'end':{
+            'class': 'end-element'
+          }
+        },
+        'flowstate' : {
+          'past' : { 'fill' : '#CCCCCC', 'font-size' : 12},
+          'current' : {'fill' : 'yellow', 'font-color' : 'red', 'font-weight' : 'bold'},
+          'future' : { 'fill' : '#FFFF99'},
+          'invalid': {'fill' : '#444444'},
+          'approved' : { 'fill' : '#58C4A3', 'font-size' : 12, 'yes-text' : 'APPROVED', 'no-text' : 'n/a' },
+          'rejected' : { 'fill' : '#C45879', 'font-size' : 12, 'yes-text' : 'n/a', 'no-text' : 'REJECTED' }
+        }
+      });
+    },
+
+    generateStructureFlowchart() { // 一键生成代码结构流程图
+      axios({ // 用原生axios
+        method: 'post',
+        url: '/python/submitCodeASTGraph',
+        data: {
+          content: this.code,
+          languageName: 'PYTHON',
+          graphtype: 'AST',
+        }
+      }).then(res => {
+        let success = res.data["success"]
+        if (!success){
+          this.$alert(res.data["information"])
+        }else {
+          this.ASTcode2graph(res.data["ASTfc_code"])
+        }
+      }).catch((e) => {
+        console.info(e)
+        this.$message("Bad request. Check the code.")
+      })
+    },
+
+    generateSpecialComment() { // 一键生成特殊注释
+      // if (this.code.trim() === '') {
+      //   myMessage.error(this.$i18n.t('m.Code_can_not_be_empty'));
+      //   return;
+      // }
+      //
+      // if (this.code.length > 65535) {
+      //   myMessage.error(this.$i18n.t('m.Code_Length_can_not_exceed_65535'));
+      //   return;
+      // }
+      let data = {
+        content: this.code,
+        languageName: 'PYTHON',
+        graphtype: 'sum_code'
+      };
+      const generateFunc = (data) => {
+        api.generateSpecialComment(data).then(
+          (res) => {
+            console.info(res)
+            this.generateSpecialCommentVisible = true
+            this.specialCommentedCode = res.data.com_code
+            //
+            // // 更新store的可提交权限
+            // if (!this.canSubmit) {
+            //   this.$store.commit('contestIntoAccess', { access: true });
+            // }
+            // this.submitted = true;
+            // this.checkSubmissionStatus();
+          },
+          (err) => {
+            console.info(err)
+            console.info('生成特殊注释出错')
+          }
+        );
+      };
+      generateFunc(data)
+    },
+
+    Test(){
+      axios({ // 用原生axios
+        method: 'post',
+        url: '/python/unixcoder',
+      }).then(response => {
+           console.log(response);
+              })
+    },
+    optStart() {
+      console.info(this.code)
+      // 这里很坑，要用encodeURIComponent编码，具体请百度
+      this.optUrl = 'http://localhost:8003/iframe-embed.html#code=' + encodeURIComponent(this.code) + '&cumulative=false&py=3&curInstr=0'
+      console.info(this.optUrl)
+      console.info('http://localhost:8003/iframe-embed.html#code=x+%3D+5%0Ay+%3D+10%0Az+%3D+x+%2B+y&cumulative=false&py=3&curInstr=0')
+      this.optVisible = true
+    },
+
+    generateFlowChart() { // 根据特殊注释, 生成流程图
+      // let data = {
+      //   content: this.specialCommentedCode,
+      //   languageName: 'PYTHON',
+      //   graphtype: 'FC'
+      // };
+      // const generateFunc = (data) => {
+      //   api.generateFlowChart(data).then(
+      //           (res) => {
+      //             console.info(res)
+      //             this.flowchartUrl = res.data
+      //           },
+      //           (err) => {
+      //             console.info(err)
+      //             console.info('生成流程图出错')
+      //           }
+      //   );
+      // };
+      // generateFunc(data)
+      axios({ // 用原生axios，关键是指定responseType: 'blob'
+        method: 'post',
+        url: '/python/submitCodeFC',
+        data: {
+          content: this.specialCommentedCode,
+          languageName: 'PYTHON',
+          graphtype: 'FC',
+        },
+        responseType: 'blob',   //这里是声明期望返回的数据类型，为blob
+      }).then(res => {
+        this.flowchartUrl = window.URL.createObjectURL(res.data);   //这里调用window的URL方法，将blob转换为对象并赋值给img标签
+        this.flowchartVisible = true  // 显示图片
+      })
+    },
+
     submitCode() {
       if (this.code.trim() === '') {
         myMessage.error(this.$i18n.t('m.Code_can_not_be_empty'));
@@ -1467,6 +1706,9 @@ export default {
 };
 </script>
 <style>
+.svg{
+
+}
 .katex .katex-mathml {
   display: none;
 }

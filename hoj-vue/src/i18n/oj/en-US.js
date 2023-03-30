@@ -11,6 +11,8 @@ export const m = {
   NavBar_OI_Rank: 'OI Rank',
   NavBar_Discussion: 'Discussion',
   NavBar_Group: 'Group',
+  NavBar_CodeAI:'CodeAI',
+  NavBar_CodeSummarization:'CodeSummarization',
   NavBar_About: 'About',
   NavBar_Introduction: 'Introduction',
   NavBar_Developer: 'Developer',
@@ -221,6 +223,9 @@ export const m = {
   Other: 'Other',
   Created: 'Created By',
   Please_login_first: 'Please login first',
+  Generate_Structure_Flowchart: 'Generate structure flowchart',
+  Generate_Special_Comment: 'Generate special comment',
+  Generate_FlowChart: 'Generate flowchart',
   Submit: 'Submit',
   Submitting: 'Submitting',
   Judging: 'Judging',
@@ -462,6 +467,9 @@ export const m = {
 
   // /components/oj/common/CodeMirror.vue
   Lang: 'Lang',
+  Structure_Flowchart_as_Follows: 'The code structure flowchart is as follows',
+  Special_Commented_Code: 'The special comment code is as follows',
+  Flowchart_as_Follows: 'The flowchart is as follows',
   Theme: 'Theme',
   Reset_Code: 'Reset Code',
   Upload_file: 'Upload file',

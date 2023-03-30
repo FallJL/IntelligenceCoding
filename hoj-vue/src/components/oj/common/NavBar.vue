@@ -71,6 +71,17 @@
           >{{ $t('m.NavBar_Group') }}</el-menu-item
         >
 
+        <el-submenu index="/codeAI"
+        ><template slot="title">
+          <i class="el-icon-takeaway-box"
+        ></i
+        >{{ $t('m.NavBar_CodeAI') }}
+        </template>
+          <el-menu-item index="/codeSummarization">{{
+            $t('m.NavBar_CodeSummarization')
+            }}</el-menu-item>
+        </el-submenu>
+
         <el-submenu index="about">
           <template slot="title"
             ><i class="el-icon-info"></i>{{ $t('m.NavBar_About') }}</template
@@ -532,6 +543,31 @@
             :open="openSideMenu === 'about'"
             @toggle-nested="openSideMenu = arguments[0] ? 'about' : ''"
           >
+            <mu-list-item-action>
+              <mu-icon value=":el-icon-info" size="24"></mu-icon>
+            </mu-list-item-action>
+            <mu-list-item-title>{{ $t('m.NavBar_CodeAI') }}</mu-list-item-title>
+            <mu-list-item-action>
+              <mu-icon
+                      class="toggle-icon"
+                      size="24"
+                      value="keyboard_arrow_down"
+              ></mu-icon>
+            </mu-list-item-action>
+            <mu-list-item
+                    button
+                    :ripple="false"
+                    slot="nested"
+                    to="/codeSummarization"
+                    @click="opendrawer = !opendrawer"
+                    active-class="mobile-menu-active"
+            >
+              <mu-list-item-title>{{
+                $t('m.NavBar_CodeSummarization')
+                }}</mu-list-item-title>
+            </mu-list-item>
+
+
             <mu-list-item-action>
               <mu-icon value=":el-icon-info" size="24"></mu-icon>
             </mu-list-item-action>

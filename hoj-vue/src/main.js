@@ -97,5 +97,8 @@ new Vue({
   router,
   store,
   i18n,
-  render: h => h(App)
+  render: h => h(App),
+  beforeCreate(){
+    Vue.prototype.$bus = this //安装全局总线
+  }
 }).$mount('#app')
