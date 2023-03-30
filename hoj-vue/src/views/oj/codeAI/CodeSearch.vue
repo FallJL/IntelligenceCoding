@@ -8,19 +8,32 @@
             v-model="query.content"
             class="input-with-select"
           >
-            <el-select
-              v-model="query.languageType"
-              slot="prepend"
-            >
+            <el-select v-model="query.languageType" slot="prepend">
               <el-option label="C" value="1"></el-option>
               <el-option label="C++" value="2"></el-option>
               <el-option label="Java" value="3"></el-option>
               <el-option label="Python3" value="4"></el-option>
               <el-option label="Python2" value="5"></el-option>
             </el-select>
-            <el-button @click="searchCodeList" slot="append" icon="el-icon-search"></el-button>
+            <el-button
+              @click="getCodeSearchList"
+              slot="append"
+              icon="el-icon-search"
+            ></el-button>
           </el-input>
         </div>
+      </el-col>
+    </el-row>
+    <el-row :gutter="20">
+      <el-col :span="12" :offset="6">
+        <el-input
+          type="textarea"
+          placeholder="等待显示搜索结果"
+          v-model="searchedAllCode"
+          maxlength="200"
+          show-word-limit
+        >
+        </el-input>
       </el-col>
     </el-row>
   </div>
@@ -32,25 +45,23 @@ import "element-ui/lib/theme-chalk/display.css";
 import Pagination from "@/components/oj/common/Pagination";
 const Editor = () => import("@/components/admin/Editor.vue");
 export default {
-  name:'CodeSearch',
+  name: "CodeSearch",
   components: {
     Editor,
     Pagination,
   },
   data() {
     return {
-      total: 0,
+      searchedAllCode: "",
+      limit: 30,
+      total: 100,
       query: {
         languageType: "4",
         content: "",
         keyword: "",
-        cid: "",
         currentPage: 1,
-        limit: 10,
-        pid: "",
-        onlyMine: false,
       },
-      loading: {
+      loadings: {
         searchLoading: false,
       },
     };
@@ -82,38 +93,42 @@ export default {
   // },
   methods: {
     // ...mapActions(['changeDomTitle']),
+    getCodeSearchList() {
+      let queryParams = Object.assign({}, this.query); // 包装查询数据
+      console.log("queryParams:", queryParams);
+      this.loadings.searchLoading = true; // 设置为正在加载
+      api.getCodeSearchList(this.limit, queryParams).then(
+        (res) => {
+          console.log("res:", res);
+          // this.total = res.data.data.total;
+          // this.codeSearchList = res.data.data.records;
+          this.searchedAllCode = res.data.code;
+          this.loadings.searchLoading = false; // 加载完毕
+        },
+        (res) => {
+          this.loadings.searchLoading = false; // 加载完毕
+        }
+      );
+    },
     init() {
       this.routeName = this.$route.name;
       let query = this.$route.query;
-      this.query.keyword = query.keyword || '';
-      this.query.cid = query.cid || '';
-      this.query.pid = this.$route.params.problemID || '';
-      this.query.onlyMine = query.onlyMine + '' == 'true' ? true : false; // 统一换成字符串判断
+      this.query.keyword = query.keyword || "";
+      this.query.cid = query.cid || "";
+      this.query.pid = this.$route.params.problemID || "";
+      this.query.onlyMine = query.onlyMine + "" == "true" ? true : false; // 统一换成字符串判断
       if (this.query.cid) {
         this.currentCategory = this.cidMapName[this.query.cid];
       } else {
-        this.currentCategory = '';
+        this.currentCategory = "";
       }
       if (this.query.pid) {
         this.discussion.pid = this.query.pid;
-        this.changeDomTitle({ title: this.query.pid + ' Discussion' });
+        this.changeDomTitle({ title: this.query.pid + " Discussion" });
       } else {
         this.discussion.pid = null;
       }
       this.getDiscussionList();
-    },
-
-    getCodeSearchList() {
-      this.loading.searchLoading = true;
-      api.getCodeSearchList(this.query.limit, queryParams).then(
-        (res) => {
-          console.info(res)
-          this.loading.searchLoading = false;
-        },
-        (err) => {
-          this.loading.searchLoading = false;
-        }
-      )
     },
 
     getDiscussionList() {
@@ -142,17 +157,17 @@ export default {
 
     getInfoByUsername(uid, username) {
       this.$router.push({
-        path: '/user-home',
+        path: "/user-home",
         query: { uid, username },
       });
     },
 
     toEditDiscussion() {
       if (!this.isAuthenticated) {
-        myMessage.warning(this.$i18n.t('m.Please_login_first'));
-        this.$store.dispatch('changeModalStatus', { visible: true });
+        myMessage.warning(this.$i18n.t("m.Please_login_first"));
+        this.$store.dispatch("changeModalStatus", { visible: true });
       } else {
-        this.discussionDialogTitle = this.$i18n.t('m.Create_Discussion');
+        this.discussionDialogTitle = this.$i18n.t("m.Create_Discussion");
         if (this.backupDiscussion) {
           this.discussion = this.backupDiscussion;
           // 避免监听覆盖
@@ -161,14 +176,14 @@ export default {
           this.discussion = {
             id: null,
             pid: this.query.pid || null,
-            title: '',
-            content: '',
-            description: '',
-            categoryId: '',
+            title: "",
+            content: "",
+            description: "",
+            categoryId: "",
             topPriority: false,
-            uid: '',
-            author: '',
-            avatar: '',
+            uid: "",
+            author: "",
+            avatar: "",
           };
         }
         this.showEditDiscussionDialog = true;
@@ -184,14 +199,14 @@ export default {
     },
     toDiscussionDetail(discussionID) {
       this.$router.push({
-        name: 'DiscussionDetails',
+        name: "DiscussionDetails",
         params: { discussionID: discussionID },
       });
     },
 
     toAllDiscussion() {
       this.$router.push({
-        path: '/discussion',
+        path: "/discussion",
       });
     },
 
@@ -218,11 +233,11 @@ export default {
       // 暂时解决 文本编辑器显示异常bug
       setTimeout(() => {
         if (document.createEvent) {
-          let event = document.createEvent('HTMLEvents');
-          event.initEvent('resize', true, true);
+          let event = document.createEvent("HTMLEvents");
+          event.initEvent("resize", true, true);
           window.dispatchEvent(event);
         } else if (document.createEventObject) {
-          window.fireEvent('onresize');
+          window.fireEvent("onresize");
         }
       }, 0);
     },
@@ -230,44 +245,44 @@ export default {
     submitDiscussion() {
       // 默认为题目的讨论添加题号格式
       let discussion = Object.assign({}, this.discussion);
-      if (this.discussionDialogTitle == this.$i18n.t('m.Create_Discussion')) {
+      if (this.discussionDialogTitle == this.$i18n.t("m.Create_Discussion")) {
         if (discussion.pid) {
-          discussion.title = '[' + discussion.pid + '] ' + discussion.title;
+          discussion.title = "[" + discussion.pid + "] " + discussion.title;
         }
         api.addDiscussion(discussion).then((res) => {
-          myMessage.success(this.$i18n.t('m.Post_successfully'));
+          myMessage.success(this.$i18n.t("m.Post_successfully"));
           this.showEditDiscussionDialog = false;
           this.init();
         });
       } else {
         api.updateDiscussion(discussion).then((res) => {
-          myMessage.success(this.$i18n.t('m.Update_Successfully'));
+          myMessage.success(this.$i18n.t("m.Update_Successfully"));
           this.showEditDiscussionDialog = false;
           this.init();
         });
       }
     },
     handleCommand(command) {
-      let tmpArr = command.split(':');
+      let tmpArr = command.split(":");
       switch (tmpArr[0]) {
-        case 'edit':
-          this.discussionDialogTitle = this.$i18n.t('m.Edit_Discussion');
+        case "edit":
+          this.discussionDialogTitle = this.$i18n.t("m.Edit_Discussion");
           this.discussion = Object.assign(
             {},
             this.discussionList[parseInt(tmpArr[1])]
           );
           this.showEditDiscussionDialog = true;
           break;
-        case 'delete':
-          this.$confirm(this.$i18n.t('m.Delete_Discussion_Tips'), 'Tips', {
-            confirmButtonText: this.$i18n.t('m.OK'),
-            cancelButtonText: this.$i18n.t('m.Cancel'),
-            type: 'warning',
+        case "delete":
+          this.$confirm(this.$i18n.t("m.Delete_Discussion_Tips"), "Tips", {
+            confirmButtonText: this.$i18n.t("m.OK"),
+            cancelButtonText: this.$i18n.t("m.Cancel"),
+            type: "warning",
           }).then(() => {
             api
               .deleteDiscussion(this.discussionList[parseInt(tmpArr[1])].id)
               .then((res) => {
-                myMessage.success(this.$i18n.t('m.Delete_successfully'));
+                myMessage.success(this.$i18n.t("m.Delete_successfully"));
                 this.init();
               });
           });
