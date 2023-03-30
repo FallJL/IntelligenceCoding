@@ -13,7 +13,6 @@ export const m = {
   NavBar_Group: '团队',
   NavBar_CodeAI:'代码智能',
   NavBar_CodeSummarization:'代码注释生成',
-  NavBar_CodeSearch:'代码搜索',
   NavBar_About: '关于',
   NavBar_ExternalSearch:'外部搜索',
   NavBar_Introduction: '简介',

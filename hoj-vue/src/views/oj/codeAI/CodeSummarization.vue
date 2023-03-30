@@ -16,25 +16,26 @@
                 ></CodeMirror>
             </el-card>
         </el-col>
-        <form @submit="submit">
-            <el-col :sm="24" :md="24" :lg="12" class="summarization">
-                <el-card
-                        :padding="10"
-                        id="summarization"
-                        shadow="always"
-                        class="summarization">
-                    <div style="margin-top: 50px">
-                        <div>
-                            <el-button class="submit" @click="submit">提交</el-button>
-                        </div>
-                        <el-input  type="textarea"
-                                   :rows="27"
-                                   v-model="msg" disabled="true"></el-input>
-                    </div>
-                    <
-                </el-card>
-            </el-col>
-        </form>
+
+        <el-col :sm="24" :md="24" :lg="12" class="summarization">
+            <el-card
+                    :padding="10"
+                    id="summarization"
+                    shadow="always"
+                    class="summarization">
+                <div style="margin-top: 1px">
+                    <el-button style="margin-bottom: 10px" type="primary" icon="el-icon-edit"  @click="submit">
+                        {{ $t('m.NavBar_CodeSummarization') }}
+                    </el-button>
+                    <el-input  type="textarea"
+                               :rows="28"
+                               v-model="msg" disabled="true"
+                               style="min-height: 33px; height: 610px;">
+                    </el-input>
+                </div>
+            </el-card>
+        </el-col>
+
         <div style="font-size: 14px;" :visible.sync="optVisible">
             <iframe width="1" height="1" frameborder="0"
                     :src=optUrl>
@@ -47,14 +48,16 @@
 <script>
 import myMessage from '@/common/message';
 const CodeMirror = () => import('@/components/oj/common/CodeMirror.vue');
+const CommentedCodeMirror = () => import('@/components/oj/common/CommentedCodeMirror.vue');
 export default {
         components: {
             CodeMirror,
+            CommentedCodeMirror,
         },
         data() {
             return {
                 code:'',
-                language:'c',
+                language:'C',
                 theme:'solarized',
                 formInline: {
                     user: '',
@@ -64,6 +67,12 @@ export default {
                 optUrl:'',
                 msg:'这是代码注释！！！'
             }
+        },
+        mounted(){
+            //根据上传文件自动获取代码语言类型，全局总线数据来自codeMirror
+            this.$bus.$on('getLanguage',(data)=>{
+                this.language=data
+            })
         },
         methods: {
             submit(){
@@ -103,12 +112,13 @@ export default {
                         method:'post',
                         url:'http://localhost:8088/python/unixcoder',
                         data:{
-                            code:this.code
+                            code:this.code,
+                            language:this.language
                         }
                     }).then(
                         response=> {
                             console.log("成功",response.data)
-                            console.log(this.code)
+                            console.log(this.language)
                             this.msg = response.data
                         },
                         error => {
@@ -117,10 +127,11 @@ export default {
                     )
                 }
             },
-            onSubmit() {
-                console.log('submit!');
-            },
-            onChangeLang(newLang) {
+            // onSubmit() {
+            //     console.log('submit!');
+            // },
+            onChangeLang(newLang){
+                this.code='';
                 this.language = newLang;
             },
             onChangeTheme(newTheme) {
@@ -137,8 +148,7 @@ export default {
                     }
                 )
                     .then(() => {
-                            this.code = code;
-
+                        this.code = '';
                     })
                     .catch(() => {});
             }
@@ -149,14 +159,6 @@ export default {
 <style scoped>
     .container {
         margin-bottom: 20px;
-    }
-
-    .submit{
-        color: #2d8cf0;
-    }
-    .el-input {
-        width: 100%;
-        height: 650px;
     }
     .container .content {
         font-size: 16px;

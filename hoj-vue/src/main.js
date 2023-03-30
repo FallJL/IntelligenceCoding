@@ -1,5 +1,4 @@
 import Vue from 'vue'
-Vue.config.devtools = true  // 使用Vue的开发者工具
 import App from './App.vue'
 import store from './store'
 import Element from 'element-ui'
