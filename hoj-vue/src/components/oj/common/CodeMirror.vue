@@ -224,6 +224,7 @@ export default {
     },
     onUploadFile() {
       document.getElementById('file-uploader').click();
+      console.log(document.getElementById('file-uploader').files[0])
     },
     onUploadFileDone() {
       let f = document.getElementById('file-uploader').files[0];
@@ -235,6 +236,25 @@ export default {
         document.getElementById('file-uploader').value = '';
       };
       fileReader.readAsText(f, 'UTF-8');
+      //自动根据上传文件后缀名识别代码语言
+      let suffix = document.getElementById('file-uploader').files[0].name
+      let a=suffix.split('.').slice(-1)
+      if(a=='py'){
+        this.language='Python3'
+      }
+      else if(a=='java'){
+        this.language='Java'
+      }
+      else if(a=='c'){
+        this.language='C'
+      }
+      else if(a=='cpp'){
+        this.language='C++'
+      }
+      else{
+        this.$confirm(this.$i18n.t('m.Your_Sumbit_is_not_right'))
+      }
+      this.$bus.$emit('getLanguage',this.language)
     },
   },
   computed: {
