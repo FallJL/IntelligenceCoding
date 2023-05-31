@@ -1,4 +1,5 @@
 import Vue from 'vue'
+Vue.config.devtools = true  // 使用Vue的开发者工具
 import App from './App.vue'
 import store from './store'
 import Element from 'element-ui'
@@ -97,5 +98,8 @@ new Vue({
   router,
   store,
   i18n,
-  render: h => h(App)
+  render: h => h(App),
+  beforeCreate(){
+    Vue.prototype.$bus = this //安装全局总线
+  }
 }).$mount('#app')

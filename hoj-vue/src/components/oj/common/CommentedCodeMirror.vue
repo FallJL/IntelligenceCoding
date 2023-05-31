@@ -3,64 +3,7 @@
     <el-row class="header">
       <el-col :xs="24" :sm="15" :md="15" :lg="15">
         <div class="select-row">
-          <span>{{ $t('m.Lang') }}:</span>
-          <span>
-            <el-select
-              :value="this.language"
-              @change="onLangChange"
-              class="left-adjust"
-              size="small"
-            >
-              <el-option v-for="item in languages" :key="item" :value="item"
-                >{{ item }}
-              </el-option>
-            </el-select>
-          </span>
-          <span>
-            <el-tooltip :content="$t('m.Reset_Code')" placement="top">
-              <el-button
-                icon="el-icon-refresh"
-                @click="onResetClick"
-                size="small"
-              ></el-button>
-            </el-tooltip>
-          </span>
-          <span>
-            <el-tooltip :content="$t('m.Upload_file')" placement="top">
-              <el-button
-                icon="el-icon-upload"
-                @click="onUploadFile"
-                size="small"
-              ></el-button>
-            </el-tooltip>
-          </span>
-          <span>
-            <input
-              type="file"
-              id="file-uploader"
-              style="display: none"
-              @change="onUploadFileDone"
-            />
-          </span>
-        </div>
-      </el-col>
-      <el-col :xs="24" :sm="9" :md="9" :lg="9">
-        <div class="select-row fl-right">
-          <span>{{ $t('m.Theme') }}:</span>
-          <el-select
-            :value="this.theme"
-            @change="onThemeChange"
-            class="right-adjust"
-            size="small"
-          >
-            <el-option
-              v-for="item in themes"
-              :key="item.label"
-              :label="$t('m.' + item.label)"
-              :value="item.value"
-              >{{ $t('m.' + item.label) }}
-            </el-option>
-          </el-select>
+          <span>{{ $t('m.Special_Commented_Code') }}:</span>
         </div>
       </el-col>
     </el-row>
@@ -224,7 +167,6 @@ export default {
     },
     onUploadFile() {
       document.getElementById('file-uploader').click();
-      console.log(document.getElementById('file-uploader').files[0])
     },
     onUploadFileDone() {
       let f = document.getElementById('file-uploader').files[0];
@@ -236,25 +178,6 @@ export default {
         document.getElementById('file-uploader').value = '';
       };
       fileReader.readAsText(f, 'UTF-8');
-      //自动根据上传文件后缀名识别代码语言
-      let suffix = document.getElementById('file-uploader').files[0].name
-      let a=suffix.split('.').slice(-1)
-      if(a=='py'){
-        this.language='Python3'
-      }
-      else if(a=='java'){
-        this.language='Java'
-      }
-      else if(a=='c'){
-        this.language='C'
-      }
-      else if(a=='cpp'){
-        this.language='C++'
-      }
-      else{
-        this.$confirm(this.$i18n.t('m.Your_Sumbit_is_not_right'))
-      }
-      this.$bus.$emit('getLanguage',this.language)
     },
   },
   computed: {

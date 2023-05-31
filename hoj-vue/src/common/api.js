@@ -222,6 +222,21 @@ const ojApi = {
     })
   },
 
+  // CodeAI代码智能页的相关请求
+  getCodeSearchList (limit, searchParams) {
+    let params = {
+      limit
+    }
+    Object.keys(searchParams).forEach((element) => {
+      if (searchParams[element]!==''&&searchParams[element]!==null&&searchParams[element]!==undefined) {
+        params[element] = searchParams[element]
+      }
+    })
+    return ajax('/codeAI/get-code-search-list', 'get', {
+      params: params
+    })
+  },
+
   // 查询当前登录用户对题目的提交状态
   getUserProblemStatus(pidList,isContestProblemList,cid,gid){
     return ajax("/api/get-user-problem-status",'post',{
@@ -254,6 +269,20 @@ const ojApi = {
       params:{
         pid
       }
+    })
+  },
+
+  // step1: 根据代码生成注释
+  generateSpecialComment (data) {
+    return ajax('/python/submitCodeComment','post',{
+      data
+    })
+  },
+
+  // step2: 根据带有特殊注释的代码生成流程图
+  generateFlowChart (data) {
+    return ajax('/python/submitCodeFC','post',{
+      data
     })
   },
 
