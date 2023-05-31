@@ -237,6 +237,7 @@ export const m = {
   Wrong_Answer: 'Wrong Answer',
   View_Contest: 'View Contest',
   Are_you_sure_you_want_to_reset_your_code: 'Are you sure you want to reset your code?',
+  Are_you_sure_you_want_to_generate_comments: 'Are you sure you want to generate comments?',
   Code_can_not_be_empty: 'Code can not be empty',
   Code_Length_can_not_exceed_65535: 'The code should contain no more than 65535 characters!',
   Submit_code_successfully: 'Submit code successfully',
