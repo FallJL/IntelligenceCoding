@@ -17,7 +17,3 @@ npm run build
 
 ### Customize configuration
 See [Configuration Reference](https://cli.vuejs.org/config/).
-
-# rjl在2023/3/28添加了这一行用以测试
-# 测试合并
-# 更新代码注释界面
