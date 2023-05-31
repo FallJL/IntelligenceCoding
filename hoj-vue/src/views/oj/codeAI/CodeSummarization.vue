@@ -29,7 +29,8 @@
                     </el-button>
                     <el-input  type="textarea"
                                :rows="28"
-                               v-model="msg" disabled="true"
+                               class="inputText"
+                               :value="msg.join('\n')" readonly
                                style="min-height: 33px; height: 610px;">
                     </el-input>
                 </div>
@@ -65,7 +66,7 @@ export default {
                 },
                 optVisible:'',
                 optUrl:'',
-                msg:'这是代码注释！！！'
+                msg:['代码注释展示区']
             }
         },
         mounted(){
@@ -110,7 +111,7 @@ export default {
                     // this.code=JSON.stringify(this.code)
                     axios({
                         method:'post',
-                        url:'http://localhost:8088/python/unixcoder',
+                        url:'http://localhost:8088/codeAI/unixcoder',
                         data:{
                             code:this.code,
                             language:this.language
@@ -157,6 +158,11 @@ export default {
 </script>
 
 <style scoped>
+    .inputText {
+        font-size: 24px; /* 可以根据需要调整字体大小 */
+        font-weight: bold;
+        white-space: pre-wrap;
+    }
     .container {
         margin-bottom: 20px;
     }
