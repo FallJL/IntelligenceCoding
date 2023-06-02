@@ -133,3 +133,4 @@ downstream-tasks/code-search/dataset/
 npy/
 .idea
 saved_models/
+downstream-tasks/code-summarization/code/
